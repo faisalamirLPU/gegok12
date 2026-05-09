@@ -7,18 +7,41 @@
                 </span>
             </button>
 
-            @if(Auth::user()->SchoolLogo['meta_value'] != '-')
-                <a class="h-10 object-contain" href="{{ route('dashboard') }}">
-                    <img src="{{ Auth::user()->SchoolLogoPath }}" class="h-10 w-auto object-cover">
-                </a>
-                @else
-                <a class="h-10 object-contain" href="{{ route('dashboard') }}">
-                    <img src="/uploads/demologo.png" class="h-10 w-auto object-cover mr-3">
-                </a>
-            @endif
-            <a class="text-lg lg:text-3xl font-exo font-medium text-gray-600" href="{{ route('dashboard') }}">
-                <strong>{{ ucwords(Auth::user()->school->name) }}</strong>
-            </a>
+            @if(Auth::user()->usergroup_id == 1)
+
+    <a class="h-10 object-contain" href="{{ route('dashboard') }}">
+        <img src="/uploads/demologo.png" class="h-10 w-auto object-cover mr-3">
+    </a>
+
+@else
+
+    @if(Auth::user()->SchoolLogo['meta_value'] != '-')
+
+        <a class="h-10 object-contain" href="{{ route('dashboard') }}">
+            <img src="{{ Auth::user()->SchoolLogoPath }}" class="h-10 w-auto object-cover">
+        </a>
+
+    @else
+
+        <a class="h-10 object-contain" href="{{ route('dashboard') }}">
+            <img src="/uploads/demologo.png" class="h-10 w-auto object-cover mr-3">
+        </a>
+
+    @endif
+
+@endif
+
+    @if(Auth::user()->usergroup_id == 1)
+
+        <strong>GegoK12 SaaS Panel</strong>
+
+    @else
+
+        <strong>{{ ucwords(Auth::user()->school->name) }}</strong>
+
+    @endif
+
+</a>
         @else
             @include('layouts.partials.logo')
         @endif
@@ -28,11 +51,13 @@
         <ul class="navbar-nav mr-auto flex">
         </ul>
     </div>
- 
+
     <div class="flex flex-col-reverse lg:flex-row md:flex-row items-center">
         <!--academic year drop down-->
         <div class="hidden lg:block md:block">
-            <nav-bar></nav-bar>
+            @if(Auth::user()->usergroup_id != 1)
+                <nav-bar></nav-bar>
+            @endif
         </div>
         <!--academic year drop down-->
         <div class="flex items-center">

@@ -74,17 +74,18 @@ class Kernel extends HttpKernel
 
         'schooladmin'           =>  \App\Http\Middleware\MustBeSchoolAdmin::class,
         'schoolsubadmin'        =>  \App\Http\Middleware\MustBeSchoolSubAdmin::class,
-        'teacher'               =>  \App\Http\Middleware\MustBeTeacher::class,  
-        'librarian'             =>  \App\Http\Middleware\MustBeLibrarian::class,  
-        'student'               =>  \App\Http\Middleware\MustBeStudent::class,  
-        'parent'                =>  \App\Http\Middleware\MustBeParent::class,  
-        'receptionist'          =>  \App\Http\Middleware\MustBeReceptionist::class,  
+        'teacher'               =>  \App\Http\Middleware\MustBeTeacher::class,
+        'librarian'             =>  \App\Http\Middleware\MustBeLibrarian::class,
+        'student'               =>  \App\Http\Middleware\MustBeStudent::class,
+        'parent'                =>  \App\Http\Middleware\MustBeParent::class,
+        'receptionist'          =>  \App\Http\Middleware\MustBeReceptionist::class,
         'accountant'            =>  \App\Http\Middleware\MustBeAccountant::class,
         'stockkeeper'           =>  \App\Http\Middleware\MustBeStockKeeper::class,
-        'adminaccountant'       =>  \App\Http\Middleware\AdminAccountant::class,   
-        'privilegeconditions'   =>  \App\Http\Middleware\MustBePrivilege::class, //checks academic year and standards  
-        'verifyotp'             =>  \App\Http\Middleware\MustBeOTP::class, //verify otp while school registration   
+        'adminaccountant'       =>  \App\Http\Middleware\AdminAccountant::class,
+        'privilegeconditions'   =>  \App\Http\Middleware\MustBePrivilege::class, //checks academic year and standards
+        'verifyotp'             =>  \App\Http\Middleware\MustBeOTP::class, //verify otp while school registration
         'alumni'                =>  \App\Http\Middleware\MustBeAlumni::class,
-        
+        'superadmin' => \App\Http\Middleware\Superadmin::class,
+
     ];
 }

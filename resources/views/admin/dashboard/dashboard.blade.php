@@ -2,7 +2,214 @@
 
 @section('content')
 
-    <div class="">
+@php
+    $isSuperAdmin = Auth::check() && Auth::user()->usergroup_id == 1;
+@endphp
+
+
+@if($isSuperAdmin)
+
+<div class="">
+
+    <div>
+        <h1 class="admin-h1 font-plex my-3">
+            SaaS Super Admin Dashboard
+        </h1>
+
+        <p class="text-gray-500">
+            Platform Analytics & SaaS Management
+        </p>
+    </div>
+
+    @include('partials.message')
+
+
+    {{-- STATS --}}
+    <div class="flex flex-wrap my-2">
+
+        {{-- Schools --}}
+        <div class="w-full lg:w-1/4 md:w-1/2 px-1 my-2">
+
+            <div class="bg-white custom-shadow px-4 py-5 border">
+
+                <div class="text-center">
+
+                    <p class="text-gray-500 text-sm">
+                        Total Schools
+                    </p>
+
+                    <h2 class="text-4xl font-bold text-gray-800 mt-2">
+                        {{ \App\Models\School::count() }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        {{-- Students --}}
+        <div class="w-full lg:w-1/4 md:w-1/2 px-1 my-2">
+
+            <div class="bg-white custom-shadow px-4 py-5 border">
+
+                <div class="text-center">
+
+                    <p class="text-gray-500 text-sm">
+                        Total Students
+                    </p>
+
+                    <h2 class="text-4xl font-bold text-gray-800 mt-2">
+                        {{ \App\Models\User::where('usergroup_id',6)->count() }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        {{-- Teachers --}}
+        <div class="w-full lg:w-1/4 md:w-1/2 px-1 my-2">
+
+            <div class="bg-white custom-shadow px-4 py-5 border">
+
+                <div class="text-center">
+
+                    <p class="text-gray-500 text-sm">
+                        Total Teachers
+                    </p>
+
+                    <h2 class="text-4xl font-bold text-gray-800 mt-2">
+                        {{ \App\Models\User::where('usergroup_id',5)->count() }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        {{-- Subscriptions --}}
+        <div class="w-full lg:w-1/4 md:w-1/2 px-1 my-2">
+
+            <div class="bg-white custom-shadow px-4 py-5 border">
+
+                <div class="text-center">
+
+                    <p class="text-gray-500 text-sm">
+                        Active Subscriptions
+                    </p>
+
+                    <h2 class="text-4xl font-bold text-gray-800 mt-2">
+                        {{ \App\Models\Subscription::where('status','approve')->count() }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    {{-- RECENT SCHOOLS --}}
+    <div class="bg-white custom-shadow border mt-4">
+
+        <div class="px-5 py-4 border-b">
+
+            <h2 class="text-xl font-semibold text-gray-800">
+                Recent Schools
+            </h2>
+
+        </div>
+
+        <div class="overflow-x-auto">
+
+            <table class="w-full">
+
+                <thead>
+
+                    <tr class="border-b bg-gray-50">
+
+                        <th class="text-left py-3 px-4">
+                            School
+                        </th>
+
+                        <th class="text-left py-3 px-4">
+                            Email
+                        </th>
+
+                        <th class="text-left py-3 px-4">
+                            Phone
+                        </th>
+
+                        <th class="text-left py-3 px-4">
+                            Status
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @foreach(\App\Models\School::latest()->take(10)->get() as $school)
+
+                        <tr class="border-b hover:bg-gray-50">
+
+                            <td class="py-3 px-4">
+                                {{ $school->name }}
+                            </td>
+
+                            <td class="py-3 px-4">
+                                {{ $school->email }}
+                            </td>
+
+                            <td class="py-3 px-4">
+                                {{ $school->phone }}
+                            </td>
+
+                            <td class="py-3 px-4">
+
+                                @if($school->status)
+
+                                    <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">
+                                        Active
+                                    </span>
+
+                                @else
+
+                                    <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs">
+                                        Inactive
+                                    </span>
+
+                                @endif
+
+                            </td>
+
+                        </tr>
+
+                    @endforeach
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+@else
+
+<div class="">
         <div>
             <h1 class="admin-h1 font-plex my-3">Dashboard</h1>
         </div>
@@ -133,7 +340,7 @@
                                 <p class="text-sm text-gray-900 font-semibold" style="text-align: center;">No Notice Found</p>
                             </div>
                         @endif
-                    </div>   
+                    </div>
                 </div>
             </div>
         </div>
@@ -281,7 +488,7 @@
                                             </tr>
                                         @endforeach
                                     @endforeach
-                                </tbody>  
+                                </tbody>
                             @else
                                 <tbody>
                                     <tr class="border-t py-2">
@@ -289,8 +496,8 @@
                                             No Records found
                                         </td>
                                     </tr>
-                                </tbody> 
-                            @endif    
+                                </tbody>
+                            @endif
                         </table>
                     </div>
                 </div>
@@ -304,12 +511,12 @@
                 </div>
             </div>
         </div>
-   
+
 
              {{-- <livewire:timetable.dashboard-class />
               <livewire:timetable.dashboard-teacher />
               <livewire:timetable.day-time-table />--}}
-        
+
         <div>
             <div class="w-full px-1 my-2 bg-white">
                 <div class="pt-2 pb-6">
@@ -317,7 +524,7 @@
                         <h1 class="text-gray-800 font-semibold text-xl">
                             <a href="{{ url('/admin/feedbacks') }}">Parent's Feedback</a>
                         </h1>
-                    </div>  
+                    </div>
                     <div class="pt-3 overflow-x-auto">
                         <table class="table table-bordered messageTable w-full text-sm custom-table" id="messagelist">
                             <thead class="bg-grey-light">
@@ -331,18 +538,18 @@
                             </thead>
                             @if(count($dashboard['feedbacks']) != 0)
                                 @foreach($dashboard['feedbacks'] as $feedback)
-                                    <tbody> 
+                                    <tbody>
                                         <td>
                                             <a href="{{ url('/admin/parent/show/'.$feedback->parent->name) }}">{{ ucfirst($feedback->parent->FullName) }}</a>
                                         </td>
-                                        <td>{{ ucwords(str_replace('_', ' ', (str_replace('/', ' / ',$feedback->latestMessage->category)))) }}</td>          
-                                        <td> 
+                                        <td>{{ ucwords(str_replace('_', ' ', (str_replace('/', ' / ',$feedback->latestMessage->category)))) }}</td>
+                                        <td>
                                             <p> {!! str_limit($feedback->feedbackMessage->first()->message,50,'...') !!}
-                                                @if( $feedback->latestMessage->is_seen == '0' ) 
+                                                @if( $feedback->latestMessage->is_seen == '0' )
                                                     <span class="bg-red-300 rounded-full text-white inline-block px-2 my-1 mb-2"> New </span>
-                                                @endif  
+                                                @endif
                                             </p>
-                                        </td>         
+                                        </td>
                                         <td>{{ date('d-m-Y H:i:s',strtotime($feedback->created_at)) }}</td>
                                         <td>
                                             <div class="flex items-center">
@@ -374,7 +581,7 @@
                         <h1 class="text-gray-800 font-semibold text-xl">
                             <a href="{{ url('/admin/feedbacks') }}">Pending Event</a>
                         </h1>
-                    </div>  
+                    </div>
                     <div class="pt-3 overflow-x-auto">
                         <table class="table table-bordered messageTable w-full text-sm custom-table" id="messagelist">
                             <thead class="bg-grey-light">
@@ -390,26 +597,26 @@
                             </thead>
                             @if(count($dashboard['events']) != 0)
                                 @foreach($dashboard['events'] as $events)
-                                    <tbody> 
+                                    <tbody>
                                         <td>
 
                                         {{ ucfirst($events->title) }}
                                         </td>
-                                        <td>{{ ucfirst($events->description) }}</td>          
-                                        <td> 
+                                        <td>{{ ucfirst($events->description) }}</td>
+                                        <td>
                                            {{ ucfirst($events->category) }}
-                                        </td> 
-                                         <td> 
+                                        </td>
+                                         <td>
                                            {{ ucfirst($events->location) }}
-                                        </td>   
+                                        </td>
 
                                         <td>{{ date('d-m-Y H:i:s',strtotime($events->start_date)) }} - {{ date('d-m-Y H:i:s',strtotime($events->end_date)) }}</td>
                                         <td>
 
                                             {{$events->organised_by}}
-                                          
+
                                         </td>
-                                     
+
                                         <td>
 
                                         <a href="{{ url('admin/event/approve/'.$events->id) }}" title="Show" class="bg-blue-500 px-2 py-2 text-white ">Waiting for Approve
@@ -433,7 +640,7 @@
             <div class="pt-2 pb-6">
                 <div>
                     <h1 class="text-gray-800 font-semibold text-xl">Expire Documents</h1>
-                </div>  
+                </div>
                 <div class="pt-3 overflow-scroll">
                     <table class="table table-bordered messageTable w-full text-sm custom-table" id="messagelist">
                         <thead class="bg-grey-light">
@@ -448,8 +655,8 @@
                             @foreach($dashboard['expire_document'] as $key => $document)
                                 <tbody>
                                     <td>{{ ucfirst($document->document_type) }}</td>
-                                    <td>{{ $document->start_date }}</td>          
-                                    <td>{{ $document->end_date }}</td>         
+                                    <td>{{ $document->start_date }}</td>
+                                    <td>{{ $document->end_date }}</td>
                                     <td>
                                         <a href="{{ url('transport/vehicle/'.$document->vehicle_id.'/show') }}">{{ $document->vehicle->name }}</a>
                                     </td>
@@ -463,7 +670,7 @@
                     </table>
                 </div>
             </div>
-        </div> 
+        </div>
         <!-- Document Expire --> --}}
 
         <div class="flex flex-col lg:flex-row my-2">
@@ -483,7 +690,7 @@
                 <div class="bg-white custom-shadow px-4 pt-3 pb-6 border h-full">
                     <div>
                         <h1 class="text-gray-800 font-semibold text-xl">Unpaid Fees List</h1>
-                    </div>  
+                    </div>
                     <unpaid-fees url="{{ url('/') }}" mode="admin"></unpaid-fees>
                 </div>
             </div>--}}
@@ -494,7 +701,7 @@
                 <div class="bg-white custom-shadow px-4 pt-3 pb-6 border h-full">
                     <div>
                         <h1 class="text-gray-800 font-semibold text-xl">Stock Details</h1>
-                    </div>  
+                    </div>
                     <div class="pt-3">
                         <table class="table table-bordered messageTable w-full text-sm custom-table">
                             <thead class="bg-grey-light">
@@ -503,15 +710,15 @@
                                     <th>Quantity</th>
                                 </tr>
                             </thead>
-                            <tbody> 
+                            <tbody>
                                 @if(count($dashboard['products']) > 0)
                                     @foreach($dashboard['products'] as $product)
                                         <tr>
                                             <td><a href="{{ url('/admin/sales/show/') }}">{{ $product->name }}</a></td>
                                             <td>{{ $product->quantity}}</td>
-                                        </tr>      
+                                        </tr>
                                     @endforeach
-                                @else    
+                                @else
                                     <tr>
                                         <td colspan="6" style="text-align: center;"> No Records found</td>
                                     </tr>
@@ -534,6 +741,9 @@
         </div>
         <!--end-->
     </div>
+    </div>
+
+@endif
 @endsection
 
 @push('scripts')
@@ -595,7 +805,7 @@
         });
 
         $(document).ready(function(){
-            //  $('messageTable').messageTable();        
+            //  $('messageTable').messageTable();
         });
     </script>
 
@@ -605,7 +815,7 @@
             /*    padding: 1rem 1.5rem;*/
         }
         table.messageTable thead th, table.messageTable thead td {
-            /*padding: 1rem;*/    
+            /*padding: 1rem;*/
             border-bottom: 1px solid #1110;
         }
         table.messageTable {
@@ -631,7 +841,7 @@
             text-align: left;
         }
         }
-        @media only screen and (max-width: 760px), (min-device-width: 768px) 
+        @media only screen and (max-width: 760px), (min-device-width: 768px)
         and (max-device-width: 1024px)  {
 
     /* Force table to not be like tables anymore */
@@ -650,11 +860,11 @@
     tr {
       margin: 0 0 1rem 0;
     }
-      
+
     tr:nth-child(odd) {
       background: #ccc! important;
     }
-    
+
     td {
       /* Behave  like a "row" */
       border: none;
@@ -673,7 +883,7 @@
       width: 45%;
       padding-right: 10px;
       white-space: nowrap;
-      padding-top: 5%;   
+      padding-top: 5%;
     }
 
 
@@ -689,4 +899,4 @@
     border:none! important;
 }
 </style>
-@endpush      
+@endpush

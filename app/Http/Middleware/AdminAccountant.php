@@ -5,25 +5,10 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Support\Facades\Auth;
 
-/**
- * AdminAccountant Middleware
- *
- * Enforces access control for the admin/accountant dashboard.
- * Only Admin (ID 3) and Accountant (ID 11) users can proceed.
- * Other users are redirected to their respective dashboards:
- * - SuperAdmin (ID 1) → /superadmin/dashboard
- * - Teacher (ID 5) → /teacher/dashboard
- * - Student (ID 6) → /student/dashboard
- * - Receptionist (ID 10) → /receptionist/dashboard
- * - All others → 404 Unauthorized
- */
 class AdminAccountant
 {
     /**
      * Handle an incoming request.
-     *
-     * Routes non-admin/accountant users to appropriate dashboards
-     * or returns 404 if user has no authorized route.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
@@ -31,17 +16,34 @@ class AdminAccountant
      */
     public function handle($request, Closure $next)
     {
+        if (!Auth::check()) {
+            return redirect('/login');
+        }
+
         $userGroupId = Auth::user()->usergroup_id;
 
-        // Allow Admin (3) and Accountant (11) to proceed
-        if ($userGroupId == 11 || $userGroupId == 3) {
+        /*
+        |--------------------------------------------------------------------------
+        | Allow Access
+        |--------------------------------------------------------------------------
+        |
+        | 1  = Super Admin
+        | 3  = School Admin
+        | 11 = Accountant
+        |
+        */
+
+        if (in_array($userGroupId, [1, 3, 11])) {
+
             return $next($request);
+
         }
 
-        // Redirect other roles to their dashboards
-        if ($userGroupId == 1) {
-            return redirect('/superadmin/dashboard');
-        }
+        /*
+        |--------------------------------------------------------------------------
+        | Other Role Redirects
+        |--------------------------------------------------------------------------
+        */
 
         if ($userGroupId == 5) {
             return redirect('/teacher/dashboard');
@@ -55,7 +57,12 @@ class AdminAccountant
             return redirect('/receptionist/dashboard');
         }
 
-        // Unauthorized access - no valid role
+        /*
+        |--------------------------------------------------------------------------
+        | Unauthorized
+        |--------------------------------------------------------------------------
+        */
+
         abort(404);
     }
 }

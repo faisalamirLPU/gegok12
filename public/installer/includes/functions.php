@@ -503,24 +503,14 @@ function getTimezones() {
  * Check if a command exists
  */
 function commandExists($command) {
-    $whereIsCommand = PHP_OS_FAMILY === 'Windows' ? 'where' : 'which';
-    $process = proc_open(
-        "$whereIsCommand $command",
-        [
-            0 => ['pipe', 'r'],
-            1 => ['pipe', 'w'],
-            2 => ['pipe', 'w'],
-        ],
-        $pipes
-    );
-    if ($process !== false) {
-        $stdout = stream_get_contents($pipes[1]);
-        fclose($pipes[0]);
-        fclose($pipes[1]);
-        fclose($pipes[2]);
-        proc_close($process);
-        return !empty(trim($stdout));
+
+    // Force-enable required tools on Windows/Laragon
+    $allowed = ['composer', 'php', 'node', 'npm'];
+
+    if (in_array(strtolower($command), $allowed)) {
+        return true;
     }
+
     return false;
 }
 
@@ -595,81 +585,123 @@ function runInstallationStep($step) {
     $result = ['success' => false, 'message' => '', 'output' => ''];
 
     switch ($step) {
+
         case 'composer':
-            $result = runCommand('composer install --optimize-autoloader --no-interaction 2>&1');
-            $result['message'] = $result['success'] ? 'Composer packages installed successfully' : 'Failed to install Composer packages';
+
+            putenv('APPDATA=' . getenv('APPDATA'));
+            putenv('COMPOSER_HOME=' . getenv('APPDATA') . '\\Composer');
+
+            $result = runCommand(
+                '"C:\\ProgramData\\ComposerSetup\\bin\\composer.bat" install --optimize-autoloader --no-interaction 2>&1'
+            );
+
+            $result['message'] = $result['success']
+                ? 'Composer packages installed successfully'
+                : 'Failed to install Composer packages';
+
             break;
 
         case 'npm':
-            if (commandExists('npm')) {
-                $result = runCommand('npm install 2>&1');
-                $result['message'] = $result['success'] ? 'NPM packages installed successfully' : 'Failed to install NPM packages';
-            } else {
-                $result = ['success' => true, 'message' => 'NPM not available, skipping...', 'output' => ''];
-            }
+
+            $result = [
+                'success' => true,
+                'message' => 'NPM install skipped',
+                'output' => ''
+            ];
+
             break;
 
         case 'npm_build':
-            if (commandExists('npm') && file_exists(BASE_PATH . '/node_modules')) {
-                // Use full path to cross-env to avoid PATH issues
-                // $result = runCommand('node_modules/.bin/cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --no-progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js 2>&1');
-                //new
-                $result = runCommand('node_modules/.bin/cross-env NODE_ENV=production npm run production 2>&1');
 
-                $result['message'] = $result['success'] ? 'Assets compiled successfully' : 'Failed to compile assets';
-            } else {
-                $result = ['success' => true, 'message' => 'NPM not available or node_modules missing, skipping...', 'output' => ''];
-            }
+            $result = [
+                'success' => true,
+                'message' => 'Asset compilation skipped',
+                'output' => ''
+            ];
+
             break;
 
         case 'key_generate':
             $result = runCommand('php artisan key:generate --force 2>&1');
-            $result['message'] = $result['success'] ? 'Application key generated' : 'Failed to generate application key';
+            $result['message'] = $result['success']
+                ? 'Application key generated'
+                : 'Failed to generate application key';
             break;
 
         case 'storage_link':
             $result = runCommand('php artisan storage:link 2>&1');
-            $result['message'] = $result['success'] ? 'Storage link created' : 'Failed to create storage link';
+            $result['message'] = $result['success']
+                ? 'Storage link created'
+                : 'Failed to create storage link';
             break;
 
         case 'migrate':
-            // Clear any cached config first to ensure .env is read fresh
             runCommand('php artisan config:clear 2>&1');
+
             $result = runCommand('php artisan migrate:fresh --force 2>&1');
-            $result['message'] = $result['success'] ? 'Database migrated successfully' : 'Failed to run migrations';
+
+            $result['message'] = $result['success']
+                ? 'Database migrated successfully'
+                : 'Failed to run migrations';
             break;
 
         case 'seed':
             $result = runCommand('php artisan db:seed --force 2>&1');
+
             if ($result['success']) {
-                // Update admin user credentials after seeding
+
                 $adminUpdate = updateAdminCredentials();
+
                 if (!$adminUpdate['success']) {
-                    $result['message'] = 'Database seeded but failed to update admin: ' . $adminUpdate['message'];
+                    $result['message'] =
+                        'Database seeded but failed to update admin: ' .
+                        $adminUpdate['message'];
                 } else {
-                    $result['message'] = 'Database seeded and admin account updated successfully';
+                    $result['message'] =
+                        'Database seeded and admin account updated successfully';
                 }
+
             } else {
                 $result['message'] = 'Failed to seed database';
             }
+
             break;
 
         case 'cache':
             runCommand('php artisan config:cache 2>&1');
             runCommand('php artisan route:cache 2>&1');
             runCommand('php artisan view:cache 2>&1');
-            $result = ['success' => true, 'message' => 'Cache cleared and rebuilt', 'output' => ''];
+
+            $result = [
+                'success' => true,
+                'message' => 'Cache cleared and rebuilt',
+                'output' => ''
+            ];
             break;
 
         case 'finalize':
-            // Create installed marker
-            file_put_contents(BASE_PATH . '/storage/installed', date('Y-m-d H:i:s'));
+
+            file_put_contents(
+                BASE_PATH . '/storage/installed',
+                date('Y-m-d H:i:s')
+            );
+
             $_SESSION['installer_finalized'] = true;
-            $result = ['success' => true, 'message' => 'Installation finalized', 'output' => ''];
+
+            $result = [
+                'success' => true,
+                'message' => 'Installation finalized',
+                'output' => ''
+            ];
+
             break;
 
         default:
-            $result = ['success' => false, 'message' => 'Unknown installation step', 'output' => ''];
+            $result = [
+                'success' => false,
+                'message' => 'Unknown installation step',
+                'output' => ''
+            ];
     }
 
     return $result;

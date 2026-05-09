@@ -1,21 +1,7 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Superadmin\DashboardController;
 
-//dashboard
-
-
-// Route::group(['middleware' => ['superadmin','auth'],'prefix'=>'superadmin', 'namespace' => 'Superadmin'], function () {
-//    Route::get('superadmin/dashboard', 'DashboardController@index')->name('dashboard');
-// });
-
-
-
-
-
-
-	
-
-
-
-
-
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->name('superadmin.dashboard');
