@@ -510,7 +510,19 @@ use Illuminate\Support\Facades\DB;
 
                         <div class="school-address">
 
-                            {{ $school->address ?? 'School Address Not Available' }}
+                            @php
+
+    $schoolAddress =
+        optional(
+            DB::table('school_details')
+                ->where('school_id', $school->id)
+                ->where('meta_key', 'address')
+                ->first()
+        )->meta_value;
+
+@endphp
+
+{{ strtoupper($schoolAddress ?: ($school->address ?: 'SCHOOL ADDRESS NOT AVAILABLE')) }}
 
                         </div>
 
@@ -972,17 +984,17 @@ use Illuminate\Support\Facades\DB;
 
                 <div class="sign-box">
 
-                    <div class="line">
+                    {{-- <div class="line">
                         Parent Signature
-                    </div>
+                    </div> --}}
 
                 </div>
 
                 <div class="sign-box">
 
-                    <div class="line">
+                    {{-- <div class="line">
                         Class Teacher Signature
-                    </div>
+                    </div> --}}
 
                 </div>
 
