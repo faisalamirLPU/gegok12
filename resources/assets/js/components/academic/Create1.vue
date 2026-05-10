@@ -16,11 +16,11 @@
                 </select>
               </div>
               <span v-if="errors.standard_id" class="text-red-500 text-xs font-semibold">{{errors.standard_id[0]}}</span>
-            </div> 
+            </div>
             <!-- <div class="w-4/12">
               <div class="lg:mx-3 md:mx-3">
                 <a href="#" class="bg-blue-500 rounded text-sm text-white px-2 py-1 whitespace-no-wrap" @click="showModal('standard')">Add New Standard</a>
-              </div> 
+              </div>
             </div> -->
           </div>
         </div>
@@ -39,7 +39,7 @@
             <div v-if="Object.keys(this.standardlist).length > 0">
                 <div class="modal-body">
                     <div class="flex flex-col">
-                      <div class="w-full lg:w-1/4"> 
+                      <div class="w-full lg:w-1/4">
                         <label for="position" class="tw-form-label">Position<span class="text-red-500">*</span></label>
                       </div>
                       <div class="my-2 w-full">
@@ -53,7 +53,7 @@
                 </div>
                 <div class="modal-body" v-if="this.position != ''">
                     <div class="flex flex-col">
-                      <div class="w-full lg:w-1/4"> 
+                      <div class="w-full lg:w-1/4">
                         <label for="ref_standard_id" class="tw-form-label">Standard<span class="text-red-500">*</span></label>
                       </div>
                       <div class="my-2 w-full">
@@ -68,7 +68,7 @@
             </div>
           <div class="modal-body">
             <div class="flex flex-col">
-              <div class="w-full lg:w-1/4"> 
+              <div class="w-full lg:w-1/4">
                 <label for="standard" class="tw-form-label">Standard Name<span class="text-red-500">*</span></label>
               </div>
               <div class="my-2 w-full">
@@ -100,11 +100,11 @@
                 </select>
               </div>
               <span v-if="errors.section_id" class="text-red-500 text-xs font-semibold">{{errors.section_id[0]}}</span>
-            </div> 
+            </div>
             <div class="w-full lg:w-4/12 md:w-4/12">
               <div class="lg:mx-3 md:mx-3 w-40" >
                 <a href="#" class="bg-blue-500 rounded text-sm text-white px-2 py-1 whitespace-no-wrap" @click="showModal('section')">Add New Section</a>
-              </div> 
+              </div>
             </div>
           </div>
         </div>
@@ -122,7 +122,7 @@
           </div>
           <div class="modal-body">
             <div class="flex flex-col">
-              <div class="w-full lg:w-1/4"> 
+              <div class="w-full lg:w-1/4">
                 <label for="section" class="tw-form-label">Section Name<span class="text-red-500">*</span></label>
               </div>
               <div class="my-2 w-full">
@@ -151,7 +151,7 @@
             </select>
           </div>
           <span v-if="errors.stream" class="text-red-500 text-xs font-semibold">{{errors.stream[0]}}</span>
-        </div> 
+        </div>
       </div>
       <div class="tw-form-group w-full lg:w-1/3 mx-2" v-if="this.stream == 'others'">
         <div class="">
@@ -162,7 +162,7 @@
             <input type="text" name="other_stream" v-model="other_stream" class="tw-form-control w-full" placeholder="Enter Stream Name">
           </div>
           <span v-if="errors.other_stream" class="text-red-500 text-xs font-semibold">{{errors.other_stream[0]}}</span>
-        </div> 
+        </div>
       </div>
     </div>
 
@@ -208,7 +208,7 @@
           </div>
          <!--  <div class="modal-body">
             <div class="flex items-center">
-              <div class="w-full lg:w-1/4"> 
+              <div class="w-full lg:w-1/4">
                 <label for="subject" class="tw-form-label">Subject Name<span class="text-red-500">*</span></label>
               </div>
               <div class="my-2 w-full lg:w-3/4">
@@ -219,7 +219,7 @@
           </div>
           <div class="modal-body">
             <div class="flex items-center">
-              <div class="w-full lg:w-1/4"> 
+              <div class="w-full lg:w-1/4">
                 <label for="code" class="tw-form-label">Subject Code</label>
               </div>
               <div class="my-2 w-full lg:w-3/4">
@@ -231,7 +231,7 @@
 
           <div class="modal-body">
             <div class="flex items-center">
-              <div class="w-full lg:w-1/4"> 
+              <div class="w-full lg:w-1/4">
                 <label for="type" class="tw-form-label">Subject Type<span class="text-red-500">*</span></label>
               </div>
               <div class="my-2 w-full lg:w-3/4">
@@ -257,8 +257,8 @@
                 </select>
                  <span v-if="errors.subject_standard_id" class="text-red-500 text-xs font-semibold">{{errors.subject_standard_id[0]}}</span>
               </div>
-             
-            </div> 
+
+            </div>
           </div>
           <div class="modal-body">
             <div class="flex items-center">
@@ -271,8 +271,8 @@
                   <option v-for="section in sectionlist" v-bind:value="section.id">{{ section.name }}</option>
                 </select> <span v-if="errors.subject_section_id" class="text-red-500 text-xs font-semibold">{{errors.subject_section_id[0]}}</span>
               </div>
-             
-            </div> 
+
+            </div>
           </div>
            <div class="modal-body">
             <table class="w-full border">
@@ -308,7 +308,7 @@
             <td>
              <!--   <button  class="add_more px-3 text-3xl"  @click.prevent="removeoption(k1)" v-show="k1 || ( !k1 && subjectoptions.length >1)">-</button> -->
              <div class="flex items-center">
-            
+
               <a href="#" class="btn-times" @click="removeoption(k1)" title="Delete" v-show="k1 || ( !k1 && subjectoptions.length >1)">
                 <svg data-v-689010ab="" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" xml:space="preserve" class="w-4 h-4 fill-current text-gray-500"><g data-v-689010ab=""><g data-v-689010ab=""><g data-v-689010ab=""><polygon data-v-689010ab="" points="353.574,176.526 313.496,175.056 304.807,412.34 344.885,413.804"></polygon><rect data-v-689010ab="" x="235.948" y="175.791" width="40.104" height="237.285"></rect><polygon data-v-689010ab="" points="207.186,412.334 198.497,175.049 158.419,176.52 167.109,413.804"></polygon><path data-v-689010ab="" d="M17.379,76.867v40.104h41.789L92.32,493.706C93.229,504.059,101.899,512,112.292,512h286.74 c10.394,0,19.07-7.947,19.972-18.301l33.153-376.728h42.464V76.867H17.379z M380.665,471.896H130.654L99.426,116.971h312.474 L380.665,471.896z"></path></g></g></g> <g data-v-689010ab=""><g data-v-689010ab=""><path data-v-689010ab="" d="M321.504,0H190.496c-18.428,0-33.42,14.992-33.42,33.42v63.499h40.104V40.104h117.64v56.815h40.104V33.42 C354.924,14.992,339.932,0,321.504,0z"></path></g></g></svg>
               </a>
@@ -339,7 +339,7 @@
             <div class="lg:mx-3 md:mx-0 w-40">
               <a href="#" class="bg-blue-500 rounded text-sm text-white px-2 py-1 whitespace-no-wrap" @click="showModal('subject')">Add New Subject</a>
             </div>
-          </div> 
+          </div>
         </div>
       </div>
     </div>
@@ -380,14 +380,14 @@
         </tbody>
       </table>
     </div>
-     
+
     <div class="py-3">
       <a href="#" dusk="submit-btn" class="btn btn-primary submit-btn" @click="addStandardLink()">Submit</a>
     </div>
   </div>
 </template>
 
-<script> 
+<script>
 export default {
   props:['url'],
   data(){
@@ -445,9 +445,9 @@ export default {
       var count = Object.keys(array).length;
       var list = Object.keys(array);
       for(var i = 0 , array , list , key ; i < count ; i++)
-      { 
+      {
         if(list[i] == key)
-        { 
+        {
           return array[key];
         }
       }
@@ -474,7 +474,7 @@ export default {
       {
         var subjects = this.groupBy(standard_subject, this.section_id);
         var count = (subjects).length;
-  
+
         for(var i=0,subjects ; i < count ; i++)
         {
           this.inputs.push({
@@ -511,17 +511,22 @@ export default {
       this.errors=[];
       this.success=null;
 
-      let formData=new FormData(); 
+      let formData=new FormData();
 
       formData.append('position',this.position);
       formData.append('ref_standard_id',this.ref_standard_id);
       formData.append('standard',this.standard);
       formData.append('standardlist',this.standardlist);
 
-      axios.post('/admin/standard/add',formData,{headers: {'Content-Type': 'multipart/form-data'}}).then(response => {     
+      axios.post('/admin/standard/add',formData,{
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+      }).then(response => {
           this.success = response.data.success;
           this.show = 0;
-          window.location.reload(); 
+          window.location.reload();
         }).catch(error => {
           this.errors = error.response.data.errors;
         });
@@ -532,12 +537,17 @@ export default {
       this.errors=[];
       this.success=null;
 
-      let formData=new FormData(); 
+      let formData=new FormData();
 
       formData.append('section',this.section);
 
-      axios.post('/admin/section/add',formData,{headers: {'Content-Type': 'multipart/form-data'}}).then(response => {     
-          this.success = response.data.success; 
+      axios.post('/admin/section/add',formData,{
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+      }).then(response => {
+          this.success = response.data.success;
           this.show = 0;
           window.location.reload();
         }).catch(error => {
@@ -550,7 +560,7 @@ export default {
       this.errors=[];
       this.success=null;
 
-      let formData=new FormData(); 
+      let formData=new FormData();
 
       formData.append('subject_standard_id',this.subject_standard_id);
       formData.append('subject_section_id',this.subject_section_id);
@@ -589,8 +599,13 @@ export default {
       }
 
 
-      axios.post('/admin/subjects/create',formData,{headers: {'Content-Type': 'multipart/form-data'}}).then(response => {     
-          this.success = response.data.success; 
+      axios.post('/admin/subjects/create',formData,{
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+      }).then(response => {
+          this.success = response.data.success;
           this.show = 0;
           window.location.reload();
         }).catch(error => {
@@ -603,7 +618,7 @@ export default {
       this.errors=[];
       this.success=null;
 
-      let formData=new FormData(); 
+      let formData=new FormData();
 
       formData.append('standardLink_id',this.standardLink_id);
       formData.append('standard_id',this.standard_id);
@@ -634,8 +649,13 @@ export default {
           formData.append('teacher_id'+i,'');
         }
       }
-        axios.post('/admin/standardLink/add',formData,{headers: {'Content-Type': 'multipart/form-data'}}).then(response => {     
-          this.success = response.data.success; 
+        axios.post('/admin/standardLink/add',formData,{
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+          }
+        }).then(response => {
+          this.success = response.data.success;
           window.location.reload();
         }).catch(error => {
           this.errors = error.response.data.errors;
@@ -643,7 +663,7 @@ export default {
     },
 
     showModal(name)
-    { 
+    {
       this.show = name;
     },
 
@@ -657,7 +677,7 @@ export default {
       axios.get('/admin/standardLink/list').then(response => {
         this.list = response.data;
         //console.log(this.list)
-        this.setData();   
+        this.setData();
       });
     },
 
@@ -680,9 +700,9 @@ export default {
       }
     },
 
-    
 
-    deleteRow(index,input) 
+
+    deleteRow(index,input)
     {
 
       console.log(input['subject_id']);
@@ -700,22 +720,22 @@ export default {
             ],
             dangerMode: true,
         }).then(function(isConfirm) {
-            if (isConfirm) 
+            if (isConfirm)
             {
-                thisswal.inputs.splice(index,1); 
+                thisswal.inputs.splice(index,1);
 
                 axios.get('/admin/subject/delete/'+subject_id).then(response => {
           this.success = response.data.success;
         //console.log(this.list)
-         
+
            });
 
-               
+
 
 
 
             }
-            else 
+            else
             {
                 swal("Cancelled");
             }
@@ -724,20 +744,20 @@ export default {
 
      addoption(index)
       {
-        this.subjectoptions.push({ 
+        this.subjectoptions.push({
             subject_name:'',
             subject_code: '',
             subject_type:''
           });
       },
 
-      removeoption(index) 
+      removeoption(index)
       {
         this.subjectoptions.splice(index, 1);
       },
 
   },
-    
+
   created()
   {
     this.getData();
