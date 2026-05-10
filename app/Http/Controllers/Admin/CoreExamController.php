@@ -1,10 +1,8 @@
 <?php
-
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-
-use App\Models\AcademicYear;
+use App\Http\Controllers\Admin\AcademicYear;
 use App\Models\CoreExam;
 use App\Models\CoreExamSubject;
 use App\Models\CoreMark;
@@ -29,10 +27,10 @@ class CoreExamController extends Controller
     public function index()
     {
         $exams = CoreExam::with([
-                'standardLink.standard',
-                'standardLink.section',
-                'subjects',
-            ])
+            'standardLink.standard',
+            'standardLink.section',
+            'subjects',
+        ])
             ->where(
                 'school_id',
                 Auth::user()->school_id
@@ -48,18 +46,15 @@ class CoreExamController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | Create Exam Page
+    | Create Page
     |--------------------------------------------------------------------------
     */
 
     public function create()
     {
-        return view(
-            'admin.core.exams.create',
-            [
-                'classes' => $this->classes(),
-            ]
-        );
+        return view('admin.core.exams.create', [
+            'classes' => $this->classes(),
+        ]);
     }
 
     /*
@@ -72,17 +67,17 @@ class CoreExamController extends Controller
     {
         $data = $request->validate([
 
-            'name' =>
-                'required|string|max:255',
+            'name'                  =>
+            'required|string|max:255',
 
-            'standard_link_id' =>
-                'required|integer|exists:standards_link,id',
+            'standard_link_id'      =>
+            'required|integer|exists:standards_link,id',
 
-            'exam_date' =>
-                'nullable|date',
+            'exam_date'             =>
+            'nullable|date',
 
-            'status' =>
-                'nullable|in:draft,scheduled',
+            'status'                =>
+            'nullable|in:draft,scheduled',
 
             /*
             |--------------------------------------------------------------------------
@@ -90,26 +85,26 @@ class CoreExamController extends Controller
             |--------------------------------------------------------------------------
             */
 
-            'subjects' =>
-                'required|array|min:1',
+            'subjects'              =>
+            'required|array|min:1',
 
-            'subjects.*.name' =>
-                'required|string|max:255',
+            'subjects.*.name'       =>
+            'required|string|max:255',
 
-            'subjects.*.max_marks' =>
-                'required|numeric|min:1',
+            'subjects.*.max_marks'  =>
+            'required|numeric|min:1',
 
             'subjects.*.pass_marks' =>
-                'required|numeric|min:0',
+            'required|numeric|min:0',
 
-            'subjects.*.exam_date' =>
-                'nullable|date',
+            'subjects.*.exam_date'  =>
+            'nullable|date',
         ]);
 
         $standardLink = StandardLink::where(
-                'school_id',
-                Auth::user()->school_id
-            )
+            'school_id',
+            Auth::user()->school_id
+        )
             ->findOrFail(
                 $data['standard_link_id']
             );
@@ -126,23 +121,23 @@ class CoreExamController extends Controller
 
             $exam = CoreExam::create([
 
-                'school_id' =>
-                    Auth::user()->school_id,
+                'school_id'        =>
+                Auth::user()->school_id,
 
                 'academic_year_id' =>
-                    $standardLink->academic_year_id,
+                $standardLink->academic_year_id,
 
                 'standard_link_id' =>
-                    $standardLink->id,
+                $standardLink->id,
 
-                'name' =>
-                    $data['name'],
+                'name'             =>
+                $data['name'],
 
-                'exam_date' =>
-                    $data['exam_date'] ?? null,
+                'exam_date'        =>
+                $data['exam_date'] ?? null,
 
-                'status' =>
-                    $data['status'] ?? 'draft',
+                'status'           =>
+                $data['status'] ?? 'draft',
             ]);
 
             /*
@@ -161,9 +156,9 @@ class CoreExamController extends Controller
                 }
 
                 $subject = Subject::where(
-                        'school_id',
-                        Auth::user()->school_id
-                    )
+                    'school_id',
+                    Auth::user()->school_id
+                )
                     ->where(
                         'standard_id',
                         $standardLink->standard_id
@@ -181,38 +176,35 @@ class CoreExamController extends Controller
                 CoreExamSubject::create([
 
                     'core_exam_id' =>
-                        $exam->id,
+                    $exam->id,
 
-                    'subject_id' =>
-                        $subject?->id,
+                    'subject_id'   =>
+                    optional($subject)->id,
 
                     'subject_name' =>
-                        $subjectName,
+                    $subjectName,
 
-                    'max_marks' =>
-                        $subjectRow['max_marks'],
+                    'max_marks'    =>
+                    $subjectRow['max_marks'],
 
-                    'pass_marks' =>
-                        $subjectRow['pass_marks'],
+                    'pass_marks'   =>
+                    $subjectRow['pass_marks'],
 
-                    'exam_date' =>
-                        $subjectRow['exam_date'] ?? null,
+                    'exam_date'    =>
+                    $subjectRow['exam_date'] ?? null,
                 ]);
             }
 
             DB::commit();
 
-            return redirect()
-                ->route(
-                    'admin.exams.show',
-                    $exam->id
-                )
-                ->with(
-                    'successmessage',
-                    'Exam created successfully.'
-                );
+            return redirect(
+                '/admin/exams/' . $exam->id
+            )->with(
+                'successmessage',
+                'Exam created successfully.'
+            );
 
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
 
             DB::rollBack();
 
@@ -235,68 +227,208 @@ class CoreExamController extends Controller
     {
         $this->authorizeSchool($exam);
 
-        $search = request('search');
+        /*
+    |--------------------------------------------------------------------------
+    | Load Relations
+    |--------------------------------------------------------------------------
+    */
 
-        $students = $this->students($exam);
+        $exam->load([
 
-        if ($search) {
+            'subjects',
 
-            $students = $students->filter(function ($student) use ($search) {
+            'standardLink.standard',
 
-                $fullName =
-                    strtolower(
-                        optional($student->userprofile)->firstname .
-                        ' ' .
-                        optional($student->userprofile)->lastname
-                    );
+            'standardLink.section',
+        ]);
 
-                return
-                    str_contains(
-                        strtolower($student->registration_number),
-                        strtolower($search)
-                    )
-                    ||
-                    str_contains(
-                        $fullName,
-                        strtolower($search)
-                    );
-            });
+        /*
+    |--------------------------------------------------------------------------
+    | Students
+    |--------------------------------------------------------------------------
+    */
+
+        $students = User::query()
+
+            ->select('users.*')
+
+            ->join(
+                'student_academics',
+                'student_academics.user_id',
+                '=',
+                'users.id'
+            )
+
+            ->leftJoin(
+                'userprofiles',
+                'userprofiles.user_id',
+                '=',
+                'users.id'
+            )
+
+            ->where(
+                'student_academics.school_id',
+                Auth::user()->school_id
+            )
+
+            ->where(
+                'student_academics.standardLink_id',
+                $exam->standard_link_id
+            )
+
+            ->when(
+                request()->filled('search'),
+                function ($query) {
+
+                    $search = request('search');
+
+                    $query->where(function ($q) use ($search) {
+
+                        /*
+                |--------------------------------------------------------------------------
+                | Registration Number
+                |--------------------------------------------------------------------------
+                */
+
+                        $q->where(
+                            'users.registration_number',
+                            'like',
+                            "%{$search}%"
+                        )
+
+                        /*
+                |--------------------------------------------------------------------------
+                | Full Name
+                |--------------------------------------------------------------------------
+                */
+
+                            ->orWhereRaw(
+                                "CONCAT(
+                        COALESCE(userprofiles.firstname, ''),
+                        ' ',
+                        COALESCE(userprofiles.lastname, '')
+                    ) LIKE ?",
+                                ["%{$search}%"]
+                            )
+
+                        /*
+                |--------------------------------------------------------------------------
+                | First Name
+                |--------------------------------------------------------------------------
+                */
+
+                            ->orWhere(
+                                'userprofiles.firstname',
+                                'like',
+                                "%{$search}%"
+                            )
+
+                        /*
+                |--------------------------------------------------------------------------
+                | Last Name
+                |--------------------------------------------------------------------------
+                */
+
+                            ->orWhere(
+                                'userprofiles.lastname',
+                                'like',
+                                "%{$search}%"
+                            )
+
+                        /*
+                |--------------------------------------------------------------------------
+                | Username / Name
+                |--------------------------------------------------------------------------
+                */
+
+                            ->orWhere(
+                                'users.name',
+                                'like',
+                                "%{$search}%"
+                            );
+                    });
+                }
+            )
+
+            ->with('userprofile')
+
+            ->orderBy(
+                'userprofiles.firstname'
+            )
+
+            ->paginate(10)
+
+            ->withQueryString();
+
+        /*
+    |--------------------------------------------------------------------------
+    | Subject Statistics
+    |--------------------------------------------------------------------------
+    */
+
+        foreach ($exam->subjects as $subject) {
+
+            $subject->marks_entered =
+            CoreMark::where(
+                'core_exam_subject_id',
+                $subject->id
+            )->count();
+
+            $subject->pass_count =
+            CoreMark::where(
+                'core_exam_subject_id',
+                $subject->id
+            )
+                ->where(
+                    'is_passed',
+                    true
+                )
+                ->count();
+
+            $subject->fail_count =
+            CoreMark::where(
+                'core_exam_subject_id',
+                $subject->id
+            )
+                ->where(
+                    'is_passed',
+                    false
+                )
+                ->whereNotNull('marks_obtained')
+                ->count();
         }
 
-        $students = collect($students)
-            ->map(function ($student) use ($exam) {
+        /*
+    |--------------------------------------------------------------------------
+    | Student Result Status
+    |--------------------------------------------------------------------------
+    */
 
-                $subjectCount =
-                    $exam->subjects->count();
+        foreach ($students as $student) {
 
-                $enteredCount =
-                    CoreMark::where(
-                        'core_exam_id',
-                        $exam->id
-                    )
-                    ->where(
-                        'student_id',
-                        $student->id
-                    )
-                    ->count();
+            $student->marks_count =
+            CoreMark::where(
+                'core_exam_id',
+                $exam->id
+            )
+                ->where(
+                    'student_id',
+                    $student->id
+                )
+                ->count();
 
-                $student->result_completed =
-                    $subjectCount > 0
-                    &&
-                    $enteredCount >= $subjectCount;
+            $student->total_subjects =
+            $exam->subjects->count();
 
-                return $student;
-            });
+            $student->result_completed =
+            $student->marks_count >=
+            $student->total_subjects;
+        }
 
         return view(
             'admin.core.exams.show',
             [
-                'exam' => $exam->load([
-                    'subjects',
-                    'standardLink.standard',
-                    'standardLink.section',
-                ]),
-
+                'exam'     => $exam,
                 'students' => $students,
             ]
         );
@@ -321,16 +453,17 @@ class CoreExamController extends Controller
         return view(
             'admin.core.exams.marks',
             [
-                'exam' => $exam,
+                'exam'     => $exam,
+                'subject'  => $subject,
 
-                'subject' => $subject,
+                'students' =>
+                $this->students($exam),
 
-                'students' => $this->students($exam),
-
-                'marks' => CoreMark::where(
-                        'core_exam_subject_id',
-                        $subject->id
-                    )
+                'marks'    =>
+                CoreMark::where(
+                    'core_exam_subject_id',
+                    $subject->id
+                )
                     ->get()
                     ->keyBy('student_id'),
             ]
@@ -356,366 +489,552 @@ class CoreExamController extends Controller
 
         $studentIds = $this->students($exam)
             ->pluck('id')
+            ->map(fn($id) => (int) $id)
             ->all();
 
         $data = $request->validate([
 
-            'marks' =>
-                'required|array',
+            'marks'                     =>
+            'required|array',
 
-            'marks.*.student_id' =>
-                'required|integer|exists:users,id',
+            'marks.*.student_id'        =>
+            'required|integer|exists:users,id',
 
-            'marks.*.marks_obtained' =>
-                'nullable|numeric|min:0|max:' .
-                $subject->max_marks,
+            'marks.*.marks_obtained'    =>
+            'nullable|numeric|min:0|max:' .
+            $subject->max_marks,
 
-            'marks.*.remarks' =>
-                'nullable|string|max:1000',
+            'marks.*.attendance_status' =>
+            'required|in:present,absent,medical',
+
+            'marks.*.remarks'           =>
+            'nullable|string|max:1000',
         ]);
 
         foreach ($data['marks'] as $row) {
 
-            abort_unless(
-                in_array(
-                    $row['student_id'],
+            if (
+                ! in_array(
+                    (int) $row['student_id'],
                     $studentIds,
                     true
-                ),
-                404
-            );
+                )
+            ) {
+                continue;
+            }
+
+            $attendanceStatus =
+                $row['attendance_status'];
 
             $marks =
-                $row['marks_obtained'] ?? 0;
+            $attendanceStatus === 'present'
+                ? ($row['marks_obtained'] ?? 0)
+                : null;
 
-            $isPassed =
+            $isPassed = false;
+
+            if (
+                $attendanceStatus === 'present' &&
+                $marks !== null
+            ) {
+                $isPassed =
                 $marks >= $subject->pass_marks;
+            }
 
             CoreMark::updateOrCreate(
 
                 [
                     'core_exam_subject_id' =>
-                        $subject->id,
+                    $subject->id,
 
-                    'student_id' =>
-                        $row['student_id'],
+                    'student_id'           =>
+                    $row['student_id'],
                 ],
 
                 [
-                    'core_exam_id' =>
-                        $exam->id,
+                    'core_exam_id'      =>
+                    $exam->id,
 
-                    'marks_obtained' =>
-                        $marks,
+                    'marks_obtained'    =>
+                    $marks,
 
-                    'grade' =>
-                        $this->grade(
-                            (float) $marks,
-                            (float) $subject->max_marks
-                        ),
+                    'attendance_status' =>
+                    $attendanceStatus,
 
-                    'is_passed' =>
-                        $isPassed,
+                    'grade'             =>
+                    $marks === null
+                        ? null
+                        : $this->grade(
+                        (float) $marks,
+                        (float) $subject->max_marks
+                    ),
 
-                    'remarks' =>
-                        $row['remarks'] ?? null,
+                    'is_passed'         =>
+                    $isPassed,
+
+                    'remarks'           =>
+                    $row['remarks'] ?? null,
+
+                    'checked_by'        =>
+                    Auth::id(),
+
+                    'checked_at'        =>
+                    now(),
                 ]
             );
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Auto Update Status
+        |--------------------------------------------------------------------------
+        */
+
         if ($exam->status === 'draft') {
 
             $exam->update([
-                'status' => 'ongoing'
+                'status' => 'ongoing',
             ]);
         }
 
-        return redirect()
-            ->route(
-                'admin.exams.show',
-                $exam->id
-            )
-            ->with(
-                'successmessage',
-                'Marks saved successfully.'
-            );
+        return redirect(
+            '/admin/exams/' . $exam->id
+        )->with(
+            'successmessage',
+            'Marks saved successfully.'
+        );
     }
+
+    public function marksheet(
+    CoreExam $exam,
+    User $student
+) {
 
     /*
     |--------------------------------------------------------------------------
-    | Marksheet
+    | Security Check
     |--------------------------------------------------------------------------
     */
 
-    public function marksheet(
-        CoreExam $exam,
-        User $student
-    ) {
+    $this->authorizeSchool($exam);
 
-        $this->authorizeSchool($exam);
+    /*
+    |--------------------------------------------------------------------------
+    | Validate Student Belongs To This Class
+    |--------------------------------------------------------------------------
+    */
 
-        $marks = CoreMark::where(
+    $studentExists = StudentAcademic::where(
+            'school_id',
+            Auth::user()->school_id
+        )
+        ->where(
+            'standardLink_id',
+            $exam->standard_link_id
+        )
+        ->where(
+            'user_id',
+            $student->id
+        )
+        ->exists();
+
+    abort_unless($studentExists, 404);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Load Exam Subjects
+    |--------------------------------------------------------------------------
+    */
+
+    $exam->load([
+        'subjects',
+        'standardLink.standard',
+        'standardLink.section',
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Student Marks
+    |--------------------------------------------------------------------------
+    */
+
+    $marks = CoreMark::where(
+            'core_exam_id',
+            $exam->id
+        )
+        ->where(
+            'student_id',
+            $student->id
+        )
+        ->with([
+            'examSubject'
+        ])
+        ->get();
+
+    /*
+    |--------------------------------------------------------------------------
+    | School Details
+    |--------------------------------------------------------------------------
+    */
+
+    $school = Auth::user()
+        ->school
+        ->load([
+            'schoolDetailLogo',
+            'schoolDetailSlogan',
+            'schoolDetailAffiliation',
+        ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | School Logo
+    |--------------------------------------------------------------------------
+    */
+
+    $schoolLogo =
+        optional(
+            $school->schoolDetailLogo
+        )->LogoPath;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Totals
+    |--------------------------------------------------------------------------
+    */
+
+    $totalMaximum = $marks
+        ->sum(function ($mark) {
+
+            return optional(
+                $mark->examSubject
+            )->max_marks ?? 0;
+        });
+
+    $totalObtained = $marks
+        ->sum('marks_obtained');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Percentage
+    |--------------------------------------------------------------------------
+    */
+
+    $percentage = $totalMaximum > 0
+        ? round(
+            ($totalObtained / $totalMaximum) * 100
+        )
+        : 0;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Final Grade
+    |--------------------------------------------------------------------------
+    */
+
+    $finalGrade = match (true) {
+
+        $percentage >= 90 => 'A+',
+
+        $percentage >= 75 => 'A',
+
+        $percentage >= 60 => 'B',
+
+        $percentage >= 45 => 'C',
+
+        $percentage >= 35 => 'D',
+
+        default => 'F',
+    };
+
+    /*
+    |--------------------------------------------------------------------------
+    | Final Result
+    |--------------------------------------------------------------------------
+    */
+
+    $finalResult = $marks
+        ->where('is_passed', false)
+        ->count() > 0
+            ? 'FAIL'
+            : 'PASS';
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ranking System
+    |--------------------------------------------------------------------------
+    */
+
+    $students = $this->students($exam);
+
+    $rankings = [];
+
+    foreach ($students as $s) {
+
+        $studentMarks = CoreMark::where(
                 'core_exam_id',
                 $exam->id
             )
             ->where(
                 'student_id',
-                $student->id
+                $s->id
             )
-            ->with('examSubject')
             ->get();
 
-        abort_if(
-            $marks->count() <= 0,
-            404
-        );
+        $obtained = $studentMarks
+            ->sum('marks_obtained');
 
-        /*
-        |--------------------------------------------------------------------------
-        | School
-        |--------------------------------------------------------------------------
-        */
+        $rankings[] = [
 
-        $school = Auth::user()
-            ->school
-            ->load([
-                'schoolDetailLogo',
-                'schoolDetailSlogan',
-                'schoolDetailAffiliation',
-            ]);
+            'student_id' => $s->id,
 
-        $schoolLogo =
-            optional(
-                $school->schoolDetailLogo
-            )->LogoPath;
+            'total' => $obtained,
+        ];
+    }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Totals
-        |--------------------------------------------------------------------------
-        */
+    $rankings = collect($rankings)
+        ->sortByDesc('total')
+        ->values();
 
-        $totalMaximum =
-            $marks->sum(function ($mark) {
+    $rank = 1;
 
-                return optional(
-                    $mark->examSubject
-                )->max_marks ?? 0;
-            });
+    foreach ($rankings as $index => $row) {
 
-        $totalObtained =
-            $marks->sum('marks_obtained');
-
-        $percentage =
-            $totalMaximum > 0
-                ? round(
-                    ($totalObtained / $totalMaximum) * 100,
-                    2
-                )
-                : 0;
-
-        /*
-        |--------------------------------------------------------------------------
-        | Grade
-        |--------------------------------------------------------------------------
-        */
-
-        $finalGrade = match (true) {
-
-            $percentage >= 90 => 'A+',
-
-            $percentage >= 75 => 'A',
-
-            $percentage >= 60 => 'B',
-
-            $percentage >= 45 => 'C',
-
-            $percentage >= 35 => 'D',
-
-            default => 'F',
-        };
-
-        /*
-        |--------------------------------------------------------------------------
-        | Result
-        |--------------------------------------------------------------------------
-        */
-
-        $finalResult =
-            $marks->where(
-                'is_passed',
-                false
-            )->count() > 0
-                ? 'FAIL'
-                : 'PASS';
-
-        /*
-        |--------------------------------------------------------------------------
-        | Ranking
-        |--------------------------------------------------------------------------
-        */
-
-        $students =
-            $this->students($exam);
-
-        $rankings = [];
-
-        foreach ($students as $s) {
-
-            $obtained =
-                CoreMark::where(
-                        'core_exam_id',
-                        $exam->id
-                    )
-                    ->where(
-                        'student_id',
-                        $s->id
-                    )
-                    ->sum('marks_obtained');
-
-            $rankings[] = [
-
-                'student_id' =>
-                    $s->id,
-
-                'total' =>
-                    $obtained,
-            ];
+        if (
+            (int) $row['student_id'] ===
+            (int) $student->id
+        ) {
+            $rank = $index + 1;
+            break;
         }
-
-        $rankings = collect($rankings)
-            ->sortByDesc('total')
-            ->values();
-
-        $rank = 1;
-
-        foreach ($rankings as $index => $row) {
-
-            if (
-                (int) $row['student_id']
-                ===
-                (int) $student->id
-            ) {
-
-                $rank = $index + 1;
-
-                break;
-            }
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Academic Year
-        |--------------------------------------------------------------------------
-        */
-
-        $academicYear =
-            AcademicYear::find(
-                $exam->academic_year_id
-            );
-
-        return view(
-            'admin.core.exams.marksheet',
-            compact(
-                'exam',
-                'student',
-                'marks',
-                'school',
-                'schoolLogo',
-                'academicYear',
-                'totalMaximum',
-                'totalObtained',
-                'percentage',
-                'finalGrade',
-                'finalResult',
-                'rank'
-            )
-        );
     }
 
     /*
     |--------------------------------------------------------------------------
-    | Helpers
+    | Academic Year
     |--------------------------------------------------------------------------
     */
 
-    private function grade(
-        float $marks,
-        float $max
-    ): string {
+    $academicYear = null;
 
-        $percentage =
-            ($marks / $max) * 100;
+if (!empty($exam->academic_year_id)) {
 
-        return match (true) {
+    $academicYear = \App\Models\AcademicYear::find(
+        $exam->academic_year_id
+    );
+}
 
-            $percentage >= 90 => 'A+',
+    /*
+    |--------------------------------------------------------------------------
+    | Return View
+    |--------------------------------------------------------------------------
+    */
 
-            $percentage >= 75 => 'A',
+    return view(
+        'admin.core.exams.marksheet',
+        [
 
-            $percentage >= 60 => 'B',
+            'exam' => $exam,
 
-            $percentage >= 45 => 'C',
+            'student' => $student,
 
-            $percentage >= 35 => 'D',
+            'school' => $school,
 
-            default => 'F',
-        };
+            'schoolLogo' => $schoolLogo,
+
+            'marks' => $marks,
+
+            'academicYear' => $academicYear,
+
+            'totalMaximum' => $totalMaximum,
+
+            'totalObtained' => $totalObtained,
+
+            'percentage' => $percentage,
+
+            'finalGrade' => $finalGrade,
+
+            'finalResult' => $finalResult,
+
+            'rank' => $rank,
+        ]
+    );
+}
+
+    /*
+    |--------------------------------------------------------------------------
+    | Students
+    |--------------------------------------------------------------------------
+    */
+
+    private function students(CoreExam $exam)
+    {
+        return User::query()
+
+            ->select('users.*')
+
+            ->join(
+                'student_academics',
+                'student_academics.user_id',
+                '=',
+                'users.id'
+            )
+
+            ->where(
+                'student_academics.school_id',
+                Auth::user()->school_id
+            )
+
+            ->where(
+                'student_academics.standardLink_id',
+                $exam->standard_link_id
+            )
+
+            ->with('userprofile')
+
+            ->orderBy('users.name')
+
+            ->get();
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Classes
+    |--------------------------------------------------------------------------
+    */
+
+    private function classes()
+    {
+        return StandardLink::with([
+            'standard',
+            'section',
+        ])
+            ->where(
+                'school_id',
+                Auth::user()->school_id
+            )
+            ->where('status', 1)
+            ->get();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Authorize School
+    |--------------------------------------------------------------------------
+    */
 
     private function authorizeSchool(
         CoreExam $exam
     ): void {
 
         abort_unless(
-            $exam->school_id ===
-            Auth::user()->school_id,
+            (int) $exam->school_id ===
+            (int) Auth::user()->school_id,
             404
         );
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Authorize Subject Access
+    |--------------------------------------------------------------------------
+    */
 
     private function authorizeExamSubjectAccess(
         CoreExam $exam,
         CoreExamSubject $subject
     ): void {
 
-        abort_unless(
-            $exam->id ===
-            $subject->core_exam_id,
-            404
-        );
+        /*
+        |--------------------------------------------------------------------------
+        | Same School
+        |--------------------------------------------------------------------------
+        */
 
-        $this->authorizeSchool($exam);
-    }
+        if (
+            (int) $exam->school_id !==
+            (int) Auth::user()->school_id
+        ) {
+            abort(404);
+        }
 
-    private function classes()
-    {
-        return StandardLink::with([
-                'standard',
-                'section',
-            ])
+        /*
+        |--------------------------------------------------------------------------
+        | Subject Belongs To Exam
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            (int) $subject->core_exam_id !==
+            (int) $exam->id
+        ) {
+            abort(404);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Admin Bypass
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            (int) Auth::user()->usergroup_id === 3
+        ) {
+            return;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Teacher Validation
+        |--------------------------------------------------------------------------
+        */
+
+        $allowed = Teacherlink::where(
+            'school_id',
+            Auth::user()->school_id
+        )
             ->where(
-                'school_id',
-                Auth::user()->school_id
+                'teacher_id',
+                Auth::id()
             )
-            ->get();
+            ->where(
+                'standardLink_id',
+                $exam->standard_link_id
+            )
+            ->where(
+                'subject_id',
+                $subject->subject_id
+            )
+            ->exists();
+
+        if (! $allowed) {
+            abort(404);
+        }
     }
 
-    private function students(
-        CoreExam $exam
-    ) {
+    /*
+    |--------------------------------------------------------------------------
+    | Grade Generator
+    |--------------------------------------------------------------------------
+    */
 
-        return User::whereHas(
-                'studentAcademic',
-                function ($query) use ($exam) {
+    private function grade(
+        float $marks,
+        float $maxMarks
+    ): string {
 
-                    $query->where(
-                        'standardLink_id',
-                        $exam->standard_link_id
-                    );
-                }
-            )
-            ->with('userprofile')
-            ->get();
+        $percentage =
+            ($marks / $maxMarks) * 100;
+
+        return match (true) {
+
+            $percentage >= 90 => 'A+',
+            $percentage >= 80 => 'A',
+            $percentage >= 70 => 'B+',
+            $percentage >= 60 => 'B',
+            $percentage >= 50 => 'C',
+            $percentage >= 35 => 'D',
+
+            default           => 'F',
+        };
     }
 }
