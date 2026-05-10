@@ -58,16 +58,29 @@ class SiteHelper
     public static function getAcademicYear($school_id)
     {
         $schoolCacheKey = "academic_year_for_school_" . $school_id;
-        return Cache::remember($schoolCacheKey, env('CACHE_TIME'), function () use ($school_id) {
-            $academic_year = AcademicYear::where([['school_id', $school_id]]);   //['status',1]
-            if (Cache::has('academic_year') && Cache::get('academic_year') != '') {
-                $academic_year_id = Cache::get('academic_year');
-                $academic_year = $academic_year->where('id', $academic_year_id);
+        $selected_year_id = Cache::get($schoolCacheKey);
+
+        if ($selected_year_id) {
+            $academic_year = AcademicYear::where('school_id', $school_id)
+                ->where('id', $selected_year_id)
+                ->first();
+
+            if ($academic_year) {
+                return $academic_year;
             }
 
-            $academic_year = $academic_year->first();
+            Cache::forget($schoolCacheKey);
+        }
+
+        $academic_year = AcademicYear::where('school_id', $school_id)
+            ->where('status', 1)
+            ->first();
+
+        if ($academic_year) {
             return $academic_year;
-        });
+        }
+
+        return AcademicYear::where('school_id', $school_id)->first();
     }
     /**
      * Get the administrator user for a given school.

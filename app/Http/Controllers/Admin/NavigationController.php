@@ -30,7 +30,7 @@ class NavigationController extends Controller
      * Returns all academic years ordered by name along with
      * the currently active academic year.
      *
-     * @return string JSON encoded academic year list and current year
+     * @return \Illuminate\Http\JsonResponse
      */
     public function list()
     {
@@ -42,34 +42,36 @@ class NavigationController extends Controller
 
         $current_year = SiteHelper::getAcademicYear($school_id);
 
-        $array = [];
-
-        $array['academiclist'] = $academic_year;
-        $array['current_year'] = $current_year;
-
-        return json_encode($array);
+        return response()->json([
+            'academiclist' => $academic_year,
+            'current_year' => $current_year,
+        ]);
     }
 
     /**
      * Set the selected academic year in cache.
      *
-     * Clears existing academic year cache values and
+     * Clears any cached value for the current school and
      * stores the newly selected academic year ID.
      *
      * @param \Illuminate\Http\Request $request
-     * @return void
+     * @return \Illuminate\Http\JsonResponse
      */
     public function index(Request $request)
     {
         $academic_year_id = $request->academic_year_id;
+        $school_id = Auth::user()->school_id;
+        $cacheKey = "academic_year_for_school_" . $school_id;
 
-        Cache::forget('academic_year');
-        Cache::forget("academic_year_for_school_" . Auth::user()->school_id);
+        Cache::forget($cacheKey);
+        Cache::put($cacheKey, $academic_year_id, env('CACHE_TIME'));
 
-        Cache::remember("academic_year", env('CACHE_TIME'), function () use ($academic_year_id) {
-            return $academic_year_id;
-        });
+        $current_year = SiteHelper::getAcademicYear($school_id);
 
-        $current_year = SiteHelper::getAcademicYear(Auth::user()->school_id);
+        return response()->json([
+            'success' => true,
+            'message' => 'Academic year updated successfully.',
+            'current_year' => $current_year,
+        ]);
     }
 }
