@@ -7,15 +7,13 @@
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4">
 
         <div>
-
             <h1 class="admin-h1 font-plex my-3">
-                Teacher Login Credentials
+                Student Login Credentials
             </h1>
 
             <p class="text-gray-500">
-                School admins can reset or generate teacher passwords.
+                School admins can reset or generate student passwords.
             </p>
-
         </div>
 
         {{-- SEARCH BAR --}}
@@ -23,8 +21,8 @@
 
             <input
                 type="text"
-                id="teacherSearch"
-                placeholder="Search by teacher name or email..."
+                id="studentSearch"
+                placeholder="Search by student name or email..."
                 class="border border-gray-300 rounded px-4 py-2 w-full lg:w-80 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
 
@@ -36,14 +34,14 @@
 
     <div class="bg-white custom-shadow border overflow-x-auto">
 
-        <table class="w-full" id="teacherTable">
+        <table class="w-full" id="studentTable">
 
             <thead>
 
                 <tr class="border-b bg-gray-50">
 
                     <th class="text-left py-3 px-4">
-                        Teacher
+                        Student
                     </th>
 
                     <th class="text-left py-3 px-4">
@@ -62,24 +60,24 @@
 
             </thead>
 
-            <tbody id="teacherTableBody">
+            <tbody id="studentTableBody">
 
-                @foreach($teachers as $teacher)
+                @foreach($students as $student)
 
-                    <tr class="border-b hover:bg-gray-50 teacher-row">
+                    <tr class="border-b hover:bg-gray-50 student-row">
 
-                        {{-- TEACHER NAME --}}
-                        <td class="py-3 px-4 teacher-name">
+                        {{-- STUDENT NAME --}}
+                        <td class="py-3 px-4 student-name">
 
-                            {{ optional($teacher->userprofile)->firstname }}
-                            {{ optional($teacher->userprofile)->lastname }}
+                            {{ optional($student->userprofile)->firstname }}
+                            {{ optional($student->userprofile)->lastname }}
 
                         </td>
 
                         {{-- EMAIL --}}
-                        <td class="py-3 px-4 teacher-email">
+                        <td class="py-3 px-4 student-email">
 
-                            {{ $teacher->email }}
+                            {{ $student->email }}
 
                         </td>
 
@@ -88,7 +86,7 @@
 
                             <form
                                 method="POST"
-                                action="{{ url('/admin/teacher-credentials/'.$teacher->id.'/reset') }}"
+                                action="{{ url('/admin/student-credentials/'.$student->id.'/reset') }}"
                                 class="flex gap-2"
                             >
 
@@ -117,7 +115,7 @@
 
                             <a
                                 class="text-blue-600 hover:text-blue-800 font-medium"
-                                href="{{ url('/admin/teacher/show/'.$teacher->name) }}"
+                                href="{{ url('/admin/student/show/'.$student->name) }}"
                             >
 
                                 Profile
@@ -140,7 +138,7 @@
             class="hidden text-center py-6 text-gray-500"
         >
 
-            No teachers found.
+            No students found.
 
         </div>
 
@@ -149,7 +147,7 @@
     {{-- PAGINATION --}}
     <div class="mt-4">
 
-        {{ $teachers->links() }}
+        {{ $students->links() }}
 
     </div>
 
@@ -161,10 +159,10 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     const searchInput =
-        document.getElementById('teacherSearch');
+        document.getElementById('studentSearch');
 
     const rows =
-        document.querySelectorAll('.teacher-row');
+        document.querySelectorAll('.student-row');
 
     const noResults =
         document.getElementById('noResults');
@@ -178,20 +176,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
         rows.forEach(function (row) {
 
-            let teacherName =
-                row.querySelector('.teacher-name')
+            let studentName =
+                row.querySelector('.student-name')
                     .innerText
                     .toLowerCase();
 
-            let teacherEmail =
-                row.querySelector('.teacher-email')
+            let studentEmail =
+                row.querySelector('.student-email')
                     .innerText
                     .toLowerCase();
 
             if (
-                teacherName.includes(searchValue)
+                studentName.includes(searchValue)
                 ||
-                teacherEmail.includes(searchValue)
+                studentEmail.includes(searchValue)
             ) {
 
                 row.style.display = '';

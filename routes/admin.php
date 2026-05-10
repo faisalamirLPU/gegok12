@@ -67,6 +67,9 @@ Route::get('/fees/invoices/{invoice}/receipt', 'CoreFeeController@receipt')->nam
 Route::get('/teacher-credentials', 'TeacherCredentialController@index')->name('core.teacher.credentials');
 Route::post('/teacher-credentials/{teacher}/reset', 'TeacherCredentialController@reset')->name('core.teacher.credentials.reset');
 
+Route::get('/student-credentials', 'StudentCredentialController@index')->name('core.student.credentials');
+Route::post('/student-credentials/{student}/reset', 'StudentCredentialController@reset')->name('core.student.credentials.reset');
+
 Route::get('/subscription/renew', 'SubscriptionRenewalController@show')->name('core.subscription.renew');
 Route::post('/subscription/renew', 'SubscriptionRenewalController@requestRenewal')->name('core.subscription.renew.request');
 

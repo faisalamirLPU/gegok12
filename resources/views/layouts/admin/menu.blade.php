@@ -28,6 +28,13 @@
         </a>
     </li>
 
+    <li class="py-3 px-3 {{ Request::segment('2') == 'student-credentials' ? 'active' : '' }}">
+        <a href="{{ url('/admin/student-credentials') }}" class="flex items-center">
+            <span class="w-5 h-5 text-center font-bold">ID</span>
+            <span class="mx-3 whitespace-no-wrap">Student Logins</span>
+        </a>
+    </li>
+
     <li class="py-3 px-3 {{ Request::segment('2') == 'subscription' ? 'active' : '' }}">
         <a href="{{ url('/admin/subscription/renew') }}" class="flex items-center">
             <span class="w-5 h-5 text-center font-bold">S</span>
