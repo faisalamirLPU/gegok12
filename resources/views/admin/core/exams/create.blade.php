@@ -31,7 +31,7 @@
     <!-- Form -->
     <form
         method="POST"
-        action="{{ route('core.exams.store') }}"
+        action="{{ route('admin.exams.store') }}"
         class="bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden"
     >
         @csrf
@@ -51,13 +51,45 @@
                         Exam Name *
                     </label>
 
+                    <div class="flex items-center gap-2">
+                        <select
+                            id="examNameSelect"
+                            class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:ring-2 focus:ring-red-600 focus:outline-none"
+                        >
+                            <option value="">-- Select Exam Name --</option>
+                            @foreach($examNames as $examName)
+                                <option value="{{ $examName }}" {{ old('name') == $examName ? 'selected' : '' }}>
+                                    {{ $examName }}
+                                </option>
+                            @endforeach
+                            <option value="__add_new" {{ old('name_custom') ? 'selected' : '' }}>
+                                Add new exam name/type
+                            </option>
+                        </select>
+
+                        <button
+                            type="button"
+                            id="toggleExamNameInput"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg text-sm font-semibold transition"
+                        >
+                            Add New
+                        </button>
+                    </div>
+
                     <input
-                        type="text"
+                        type="hidden"
+                        id="examNameHidden"
                         name="name"
                         value="{{ old('name') }}"
-                        placeholder="Mid Term Examination"
-                        required
-                        class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:ring-2 focus:ring-red-600 focus:outline-none"
+                    >
+
+                    <input
+                        type="text"
+                        id="examNameCustom"
+                        name="name_custom"
+                        value="{{ old('name_custom') }}"
+                        placeholder="Enter new exam name or type"
+                        class="w-full mt-3 rounded-lg border border-gray-300 px-4 py-3 focus:ring-2 focus:ring-red-600 focus:outline-none {{ old('name_custom') ? '' : 'hidden' }}"
                     >
                 </div>
 
@@ -187,13 +219,13 @@
 
                             <!-- Subject Name -->
                             <td class="px-4 py-4">
-                                <input
-                                    type="text"
+                                <select
                                     name="subjects[0][name]"
-                                    placeholder="Mathematics"
+                                    class="subject-select w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-red-600 focus:outline-none"
                                     required
-                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-red-600 focus:outline-none"
                                 >
+                                    <option value="">-- Select Subject --</option>
+                                </select>
                             </td>
 
                             <!-- Max Marks -->
@@ -276,39 +308,83 @@
 <!-- Script -->
 <script>
 
+const subjectsByClass = @json($subjectsByClass);
+
 document.addEventListener('DOMContentLoaded', function () {
 
-    let subjectIndex = 1;
+    const classSelect = document.querySelector('select[name="standard_link_id"]');
+    const examNameSelect = document.getElementById('examNameSelect');
+    const examNameHidden = document.getElementById('examNameHidden');
+    const examNameCustom = document.getElementById('examNameCustom');
+    const toggleExamNameInput = document.getElementById('toggleExamNameInput');
+    const subjectsTable = document.getElementById('subjectsTable');
+    const addSubjectButton = document.getElementById('addSubject');
+    let subjectIndex = document.querySelectorAll('.subject-row').length;
 
-    const subjectsTable =
-        document.getElementById('subjectsTable');
+    const buildSubjectOptions = function (classId) {
+        const subjects = subjectsByClass[classId] || [];
 
-    const addSubjectButton =
-        document.getElementById('addSubject');
+        if (subjects.length === 0) {
+            return '<option value="">No subjects found for this class</option>';
+        }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Add Subject Row
-    |--------------------------------------------------------------------------
-    */
+        return ['<option value="">-- Select Subject --</option>']
+            .concat(subjects.map(subject => {
+                return `<option value="${subject.name}">${subject.name}</option>`;
+            }))
+            .join('');
+    };
 
-    addSubjectButton.addEventListener('click', function () {
+    const refreshSubjectSelects = function () {
+        const currentClassId = classSelect.value;
+        document.querySelectorAll('.subject-select').forEach(select => {
+            select.innerHTML = buildSubjectOptions(currentClassId);
+        });
+    };
 
+    const updateExamNameValue = function () {
+        if (examNameSelect.value === '__add_new') {
+            examNameCustom.classList.remove('hidden');
+            examNameHidden.value = examNameCustom.value.trim();
+        } else {
+            examNameCustom.classList.add('hidden');
+            examNameHidden.value = examNameSelect.value;
+        }
+    };
+
+    classSelect.addEventListener('change', function () {
+        refreshSubjectSelects();
+    });
+
+    examNameSelect.addEventListener('change', function () {
+        updateExamNameValue();
+    });
+
+    toggleExamNameInput.addEventListener('click', function () {
+        examNameSelect.value = '__add_new';
+        examNameCustom.classList.remove('hidden');
+        examNameHidden.value = examNameCustom.value.trim();
+        examNameCustom.focus();
+    });
+
+    examNameCustom.addEventListener('input', function () {
+        examNameHidden.value = this.value.trim();
+    });
+
+    const addSubjectRow = function () {
         const row = document.createElement('tr');
 
-        row.className =
-            'subject-row border-b border-gray-200';
+        row.className = 'subject-row border-b border-gray-200';
 
         row.innerHTML = `
-
             <td class="px-4 py-4">
-                <input
-                    type="text"
+                <select
                     name="subjects[${subjectIndex}][name]"
-                    placeholder="Subject Name"
+                    class="subject-select w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-red-600 focus:outline-none"
                     required
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-red-600 focus:outline-none"
                 >
+                    ${buildSubjectOptions(classSelect.value)}
+                </select>
             </td>
 
             <td class="px-4 py-4">
@@ -349,28 +425,24 @@ document.addEventListener('DOMContentLoaded', function () {
                     Remove
                 </button>
             </td>
-
         `;
 
         subjectsTable.appendChild(row);
-
         subjectIndex++;
+    };
+
+    addSubjectButton.addEventListener('click', function () {
+        addSubjectRow();
     });
 
-    /*
-    |--------------------------------------------------------------------------
-    | Remove Subject
-    |--------------------------------------------------------------------------
-    */
-
     document.addEventListener('click', function (e) {
-
         if (e.target.classList.contains('remove-subject')) {
-
             e.target.closest('tr').remove();
         }
     });
 
+    refreshSubjectSelects();
+    updateExamNameValue();
 });
 </script>
 

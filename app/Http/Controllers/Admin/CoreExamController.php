@@ -52,8 +52,32 @@ class CoreExamController extends Controller
 
     public function create()
     {
+        $classes = $this->classes();
+
+        $subjectsByClass = [];
+
+        foreach ($classes as $class) {
+            $subjectsByClass[$class->id] = Subject::where(
+                'school_id',
+                Auth::user()->school_id
+            )
+                ->where('standard_id', $class->standard_id)
+                ->where('section_id', $class->section_id)
+                ->orderBy('name', 'ASC')
+                ->get();
+        }
+
+        $examNames = CoreExam::where(
+            'school_id',
+            Auth::user()->school_id
+        )
+            ->distinct()
+            ->pluck('name');
+
         return view('admin.core.exams.create', [
-            'classes' => $this->classes(),
+            'classes' => $classes,
+            'subjectsByClass' => $subjectsByClass,
+            'examNames' => $examNames,
         ]);
     }
 
@@ -68,7 +92,10 @@ class CoreExamController extends Controller
         $data = $request->validate([
 
             'name'                  =>
-            'required|string|max:255',
+            'required_without:name_custom|string|max:255',
+
+            'name_custom'           =>
+            'nullable|string|max:255',
 
             'standard_link_id'      =>
             'required|integer|exists:standards_link,id',
@@ -131,7 +158,7 @@ class CoreExamController extends Controller
                 $standardLink->id,
 
                 'name'             =>
-                $data['name'],
+                trim($data['name_custom'] ?? $data['name']),
 
                 'exam_date'        =>
                 $data['exam_date'] ?? null,

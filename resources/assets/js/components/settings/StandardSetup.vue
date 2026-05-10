@@ -5,7 +5,7 @@
         <div class="flex flex-col lg:flex-row">
             <div class="tw-form-group w-full lg:w-1/2">
                 <div class="lg:mr-8 md:mr-8">
-                    <div class="mb-2"> 
+                    <div class="mb-2">
                         <label for="board" class="tw-form-label">Board Of Education<span class="text-red-500">*</span></label>
                     </div>
                     <div class="w-full lg:w-3/4 my-2">
@@ -22,7 +22,7 @@
         <div class="flex flex-col lg:flex-row" v-if="this.board != ''">
             <div class="tw-form-group w-full lg:w-1/2">
                 <div class="lg:mr-8 md:mr-8">
-                    <div class="mb-2"> 
+                    <div class="mb-2">
                         <label for="standards" class="tw-form-label">Select Highest Standard<span class="text-red-500">*</span></label>
                     </div>
                     <div class="w-full lg:w-full my-2">
@@ -39,14 +39,14 @@
                 </div>
             </div>
         </div>
-     
+
         <div class="py-3">
-            <a href="#" dusk="submit-btn" class="btn btn-primary submit-btn" @click="addStandardLink()">Submit</a>
+            <button type="button" dusk="submit-btn" class="btn btn-primary submit-btn" @click.prevent="addStandardLink()">Submit</button>
         </div>
     </div>
 </template>
 
-<script> 
+<script>
     export default {
         props:['url' , 'academic_year_id'],
         data(){
@@ -67,16 +67,25 @@
                 this.errors=[];
                 this.success=null;
 
-                let formData=new FormData(); 
+                let formData=new FormData();
 
                 formData.append('board',this.board);
                 formData.append('standards',this.standards);
 
-                axios.post('/admin/standard/create',formData,{headers: {'Content-Type': 'multipart/form-data'}}).then(response => {     
-                    this.success = response.data.success; 
-                    //window.location.reload();
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                axios.post('/admin/standard/create', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        'X-CSRF-TOKEN': csrfToken
+                    }
+                }).then(response => {
+                    this.success = response.data.success;
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
                 }).catch(error => {
-                    this.errors = error.response.data.errors;
+                    this.errors = error.response?.data?.errors || {};
                 });
             },
 
@@ -89,7 +98,7 @@
                 }
             },
         },
-    
+
         created()
         {
             this.getData();
