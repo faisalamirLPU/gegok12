@@ -9,6 +9,7 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\School;
+use App\Models\Userprofile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 /**
@@ -144,6 +145,60 @@ class AuthenticationAdvancedTest extends TestCase
         $this->actingAs($student)
             ->get('/admin/dashboard')
             ->assertStatus(403); // Forbidden or redirected
+    }
+
+    /**
+     * Test super admin lands on admin dashboard and sees the super admin surface
+     */
+    public function test_super_admin_can_access_admin_dashboard(): void
+    {
+        $superAdmin = User::factory()
+            ->superAdmin()
+            ->create([
+                'email' => 'superadmin@gegok12.test',
+                'password' => bcrypt('password123'),
+            ]);
+
+        Userprofile::create([
+            'user_id' => $superAdmin->id,
+            'school_id' => $superAdmin->school_id,
+            'usergroup_id' => $superAdmin->usergroup_id,
+            'firstname' => 'Super',
+            'lastname' => 'Admin',
+            'status' => 'active',
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => 'superadmin@gegok12.test',
+            'password' => 'password123',
+        ]);
+
+        $response->assertRedirect('/admin/dashboard');
+
+        $this->actingAs($superAdmin)
+            ->get('/admin/dashboard')
+            ->assertOk()
+            ->assertSee('SaaS Super Admin Dashboard')
+            ->assertSee('Total Schools')
+            ->assertSee('admin/schools', false)
+            ->assertSee('admin/plans', false)
+            ->assertSee('admin/subscriptions', false)
+            ->assertSee('admin/payments', false)
+            ->assertSee('admin/analytics', false)
+            ->assertSee('admin/settings', false);
+
+        foreach ([
+            '/admin/schools',
+            '/admin/plans',
+            '/admin/subscriptions',
+            '/admin/payments',
+            '/admin/analytics',
+            '/admin/settings',
+        ] as $path) {
+            $this->actingAs($superAdmin)
+                ->get($path)
+                ->assertOk();
+        }
     }
 
     /**

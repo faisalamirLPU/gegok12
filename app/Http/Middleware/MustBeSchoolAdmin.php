@@ -15,7 +15,11 @@ class MustBeSchoolAdmin
      */
     public function handle($request, Closure $next)
     {
-       
+        if((int) \Auth::user()->usergroup_id === \App\Models\User::SITEADMIN_USERGROUP_ID)
+        {
+            return $next($request);
+        }
+
         if(\Auth::user()->isAdmin())
         {
             return $next($request);

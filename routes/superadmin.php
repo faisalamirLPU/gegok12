@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Superadmin\DashboardController;
 
-Route::get('/dashboard', [DashboardController::class, 'index'])
+Route::redirect('/dashboard', '/admin/dashboard')
     ->name('superadmin.dashboard');

@@ -142,6 +142,26 @@ class School extends Model
     }
 
     /**
+     * Get school slogan detail.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function schoolDetailSlogan()
+    {
+        return $this->hasOne('App\Models\SchoolDetail','school_id','id')->where('meta_key','moto');
+    }
+
+    /**
+     * Get school affiliation detail.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function schoolDetailAffiliation()
+    {
+        return $this->hasOne('App\Models\SchoolDetail','school_id','id')->where('meta_key','affiliated_by');
+    }
+
+    /**
      * Get academic years for this school.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany

@@ -17,6 +17,7 @@ use Laratrust\Traits\HasRolesAndPermissions;  //LaratrustUserTrait
 use Spatie\MediaLibrary\Models\Media;
 use Laravel\Sanctum\HasApiTokens;
 use App\Presenters\UserPresenter;
+use App\Models\CoreFeeInvoice;
 use App\Helpers\SiteHelper;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -1144,6 +1145,11 @@ class User extends Authenticatable implements HasMedia
         else{
             return $this->hasMany('\App\Models\FeePayment','user_id','id');
         }
+    }
+
+    public function coreFeeInvoices()
+    {
+        return $this->hasMany(CoreFeeInvoice::class, 'student_id', 'id');
     }
 
     /**

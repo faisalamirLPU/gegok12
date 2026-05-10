@@ -747,11 +747,12 @@
 @endsection
 
 @push('scripts')
+    @if(!$isSuperAdmin)
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"></script>
     <script>
         var ctx = document.getElementById('graph').getContext('2d');
-        var femaleCount = {!! trans($dashboard['femaleCount']) !!};
-        var maleCount = {!! trans($dashboard['maleCount']) !!};
+        var femaleCount = @json($dashboard['femaleCount']);
+        var maleCount = @json($dashboard['maleCount']);
         var chart = new Chart(ctx, {
             // The type of chart we want to create
             type: 'doughnut',
@@ -808,6 +809,7 @@
             //  $('messageTable').messageTable();
         });
     </script>
+    @endif
 
     <style>
         /* messagetable */

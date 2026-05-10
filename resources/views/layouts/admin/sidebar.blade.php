@@ -179,6 +179,42 @@
 
                 </li>
 
+                <li class="py-3 px-3">
+
+                    <a href="{{ url('admin/payments') }}" class="flex items-center">
+
+                        <span class="mx-3 whitespace-no-wrap">
+                            Payments
+                        </span>
+
+                    </a>
+
+                </li>
+
+                <li class="py-3 px-3">
+
+                    <a href="{{ url('admin/analytics') }}" class="flex items-center">
+
+                        <span class="mx-3 whitespace-no-wrap">
+                            Analytics
+                        </span>
+
+                    </a>
+
+                </li>
+
+                <li class="py-3 px-3">
+
+                    <a href="{{ url('admin/settings') }}" class="flex items-center">
+
+                        <span class="mx-3 whitespace-no-wrap">
+                            Settings
+                        </span>
+
+                    </a>
+
+                </li>
+
             @else
 
                 @include('layouts.admin.menu')

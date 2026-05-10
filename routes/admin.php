@@ -14,6 +14,62 @@ Route::post( '/dashboard/send/reminder/{fee_id}', 'DashboardController@sendRemin
 Route::get( '/dashboard/tasklist/{task_flag}','DashboardController@list' );
 Route::get( '/dashboard/task/count','DashboardController@listCount' );
 
+Route::get('/schools', 'SuperadminManagementController@schools')->name('superadmin.schools');
+Route::get('/schools/create', 'SuperadminManagementController@createSchool')->name('superadmin.schools.create');
+Route::post('/schools', 'SuperadminManagementController@storeSchool')->name('superadmin.schools.store');
+Route::get('/plans', 'SuperadminManagementController@plans')->name('superadmin.plans');
+Route::get('/plans/create', 'SuperadminManagementController@createPlan')->name('superadmin.plans.create');
+Route::post('/plans', 'SuperadminManagementController@storePlan')->name('superadmin.plans.store');
+Route::get('/plans/{plan}/edit', 'SuperadminManagementController@editPlan')->name('superadmin.plans.edit');
+Route::post('/plans/{plan}', 'SuperadminManagementController@updatePlan')->name('superadmin.plans.update');
+Route::get('/subscriptions', function () {
+    abort_unless((int) \Auth::user()->usergroup_id === \App\Models\User::SITEADMIN_USERGROUP_ID, 404);
+    return view('admin.superadmin.subscriptions', ['subscriptions' => \App\Models\Subscription::with(['school', 'plan', 'user'])->latest()->paginate(20)]);
+})->name('superadmin.subscriptions');
+Route::post('/subscriptions/{subscription}/approve', 'SuperadminManagementController@approveSubscription')->name('superadmin.subscriptions.approve');
+Route::get('/payments', function () {
+    abort_unless((int) \Auth::user()->usergroup_id === \App\Models\User::SITEADMIN_USERGROUP_ID, 404);
+    return view('admin.superadmin.payments', ['payments' => \App\Models\Subscription::with(['school', 'plan', 'user'])->whereNotNull('payment_details')->latest()->paginate(20)]);
+})->name('superadmin.payments');
+Route::get('/analytics', function () {
+    abort_unless((int) \Auth::user()->usergroup_id === \App\Models\User::SITEADMIN_USERGROUP_ID, 404);
+    return view('admin.superadmin.analytics', [
+        'schoolCount' => \App\Models\School::count(),
+        'activeSchoolCount' => \App\Models\School::where('status', 1)->count(),
+        'studentCount' => \App\Models\User::where('usergroup_id', \App\Models\User::STUDENT_USERGROUP_ID)->count(),
+        'teacherCount' => \App\Models\User::where('usergroup_id', \App\Models\User::TEACHER_USERGROUP_ID)->count(),
+        'subscriptionCount' => \App\Models\Subscription::count(),
+        'activeSubscriptionCount' => \App\Models\Subscription::where('status', 'approve')->count(),
+        'expiredSubscriptionCount' => \App\Models\Subscription::where('status', 'expired')->count(),
+        'planCount' => \App\Models\Plan::count(),
+    ]);
+})->name('superadmin.analytics');
+Route::get('/settings', function () {
+    abort_unless((int) \Auth::user()->usergroup_id === \App\Models\User::SITEADMIN_USERGROUP_ID, 404);
+    return view('admin.superadmin.settings');
+})->name('superadmin.settings');
+
+Route::get('/exams', 'CoreExamController@index')->name('core.exams.index');
+Route::get('/exams/create', 'CoreExamController@create')->name('core.exams.create');
+Route::post('/exams', 'CoreExamController@store')->name('core.exams.store');
+Route::get('/exams/{exam}', 'CoreExamController@show')->name('core.exams.show');
+Route::post('/exams/{exam}/publish', 'CoreExamController@publish')->name('core.exams.publish');
+Route::get('/exams/{exam}/subjects/{subject}/marks', 'CoreExamController@marks')->name('core.exams.marks');
+Route::post('/exams/{exam}/subjects/{subject}/marks', 'CoreExamController@saveMarks')->name('core.exams.marks.save');
+Route::get('/exams/{exam}/marksheet/{student}', 'CoreExamController@marksheet')->name('core.exams.marksheet');
+
+Route::get('/fees', 'CoreFeeController@index')->name('core.fees.index');
+Route::post('/fees/heads', 'CoreFeeController@storeHead')->name('core.fees.heads.store');
+Route::post('/fees/generate', 'CoreFeeController@generate')->name('core.fees.generate');
+Route::post('/fees/invoices/{invoice}/paid', 'CoreFeeController@markPaid')->name('core.fees.paid');
+Route::get('/fees/invoices/{invoice}/receipt', 'CoreFeeController@receipt')->name('core.fees.receipt');
+
+Route::get('/teacher-credentials', 'TeacherCredentialController@index')->name('core.teacher.credentials');
+Route::post('/teacher-credentials/{teacher}/reset', 'TeacherCredentialController@reset')->name('core.teacher.credentials.reset');
+
+Route::get('/subscription/renew', 'SubscriptionRenewalController@show')->name('core.subscription.renew');
+Route::post('/subscription/renew', 'SubscriptionRenewalController@requestRenewal')->name('core.subscription.renew.request');
+
 //admission
 Route::get(	'/admissionlist','AdmissionController@admissionlist' );
 Route::get(	'/admissions','AdmissionController@index' );
@@ -394,7 +450,7 @@ Route::get( '/downloadformat', 'ImportMemberController@downloadFormat' );
 
 	//show
 	Route::get( '/homework/show/{id}', 'HomeWorkController@show' );
-	
+
 	//edit
 	Route::get( '/homework/edit/list/{id}', 'HomeWorkController@editList' );
 	Route::get( '/homework/edit/{id}', 'HomeWorkController@edit' );
@@ -403,7 +459,7 @@ Route::get( '/downloadformat', 'ImportMemberController@downloadFormat' );
 	Route::get( '/homework/delete/{id}', 'HomeWorkController@destroy' );*/
 //without approval homework -- do not remove
 
-//with approval  
+//with approval
 //homework
 	//index
 	Route::get( '/homeworks', 'Approval\HomeWorkController@index' );
@@ -418,7 +474,7 @@ Route::get( '/downloadformat', 'ImportMemberController@downloadFormat' );
 
 	//show
 	Route::get( '/homework/show/{id}', 'Approval\HomeWorkController@show' );
-	
+
 	//edit
 	Route::get( '/homework/edit/list/{id}', 'Approval\HomeWorkController@editList' );
 	Route::get( '/homework/edit/{id}', 'Approval\HomeWorkController@edit' );
@@ -432,8 +488,8 @@ Route::get( '/downloadformat', 'ImportMemberController@downloadFormat' );
 
     //reject
     Route::post('/homework/reject/{id}', 'Approval\HomeworkApprovalController@reject');
-//with approval  
-    
+//with approval
+
 //student homework
     //show
     Route::get( '/studenthomeworks/{id}', 'StudentHomeworkController@list' );
@@ -485,7 +541,7 @@ Route::get( '/downloadformat', 'ImportMemberController@downloadFormat' );
 	Route::get( '/leavetype/delete/{id}', 'LeaveTypesController@destroy' );
 
 // //videos
-// 	//index 
+// 	//index
 //     Route::get( '/videos/list', 'VideosController@standardlist' );
 // 	Route::get( '/files', 'VideosController@index' );
 // 	Route::get( '/file/list/{type}', 'VideosController@list' );
@@ -747,20 +803,20 @@ Route::get( '/emergency', 'SendEmergencyMessageController@create');
 Route::post( '/emergency/send', 'SendEmergencyMessageController@store');
 Route::post( '/student/shift', 'SendMessageController@shift' );
 
-//new add 
+//new add
 Route::get( '/teacher/show/libraryactivity/{name}', 'TeacherShowController@showBookLent' );
 
-// Show single Bus Pass 
+// Show single Bus Pass
 Route::post('student/buspass', 'StudentDetailsController@create');
 Route::get('student/showbuspass/show/{name}', 'StudentDetailsController@showbus');
 Route::get('student/buspass/showprint/{name}', 'StudentDetailsController@showprint_buspass');
 
-//Teacher ID Card 
+//Teacher ID Card
 Route::get( '/teacher/id-card', 'TeacherListController@idcard' );
 Route::get( '/teacher/id-card-print', 'TeacherListController@printidcard' );
 Route::get( '/teacher/id-card/{name}', 'TeacherShowController@showidcard' );
 Route::get( '/teacher/show-idcardprint/{name}', 'TeacherShowController@showprintidcard' );
-//Non-Teacher ID Card 
+//Non-Teacher ID Card
 Route::get( '/staffs/id-card', 'StaffController@idcard' );
 Route::get( '/staffs/id-card-print', 'StaffController@printidcard' );
 Route::get( '/staffs/id-card/{name}', 'StaffController@showidcard' );
@@ -846,4 +902,77 @@ Route::get('/purchase/addon/histories', function () {
     Route::get('setting/smstemplate/{id}/update', function ($id) {
         return view('admin.setting.edit_smstemplate',compact('id'));
     })->name('admin.setting.smstemplate.update');
+
+
+    //new routes by fsl
+    use App\Http\Controllers\Admin\CoreExamController;
+
+
+
+
+/*
+|--------------------------------------------------------------------------
+| Exams
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/exams',
+    [CoreExamController::class, 'index']
+)->name('admin.exams.index');
+
+Route::get(
+    '/exams/create',
+    [CoreExamController::class, 'create']
+)->name('admin.exams.create');
+
+Route::post(
+    '/exams/store',
+    [CoreExamController::class, 'store']
+)->name('admin.exams.store');
+
+Route::get(
+    '/exams/{exam}',
+    [CoreExamController::class, 'show']
+)->name('admin.exams.show');
+
+Route::get(
+    '/exams/{exam}/subjects/{subject}/marks',
+    [CoreExamController::class, 'marks']
+)->name('admin.exams.marks');
+
+Route::post(
+    '/exams/{exam}/subjects/{subject}/marks',
+    [CoreExamController::class, 'saveMarks']
+)->name('admin.exams.save-marks');
+
+Route::post(
+    '/exams/{exam}/publish',
+    [CoreExamController::class, 'publish']
+)->name('admin.exams.publish');
+
+Route::get(
+    '/exams/{exam}/statistics',
+    [CoreExamController::class, 'statistics']
+)->name('admin.exams.statistics');
+
+Route::get(
+    '/exams/{exam}/pending-marks',
+    [CoreExamController::class, 'pendingMarks']
+)->name('admin.exams.pending');
+
+Route::get(
+    '/exams/{exam}/toppers',
+    [CoreExamController::class, 'toppers']
+)->name('admin.exams.toppers');
+
+Route::get(
+    '/exams/upcoming/list',
+    [CoreExamController::class, 'upcoming']
+)->name('admin.exams.upcoming');
+
+Route::get(
+    '/exams/{exam}/marksheet/{student}',
+    [CoreExamController::class, 'marksheet']
+)->name('admin.exams.marksheet');
 

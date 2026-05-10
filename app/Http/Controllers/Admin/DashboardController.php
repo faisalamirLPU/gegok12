@@ -55,6 +55,10 @@ class DashboardController extends Controller
         \Artisan::call('cache:clear');
         \Artisan::call('view:clear');
         \Artisan::call('config:clear');
+
+        if ((int) Auth::user()->usergroup_id === User::SITEADMIN_USERGROUP_ID) {
+            return view('/admin/dashboard/dashboard');
+        }
         
         $admin_id  =   Auth::id();
         $school_id =   Auth::user()->school_id;

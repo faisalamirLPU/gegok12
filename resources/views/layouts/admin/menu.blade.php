@@ -7,6 +7,34 @@
         </a>
     </li>
 
+    <li class="py-3 px-3 {{ Request::segment('2') == 'exams' ? 'active' : '' }}">
+        <a href="{{ url('/admin/exams') }}" class="flex items-center">
+            <span class="w-5 h-5 text-center font-bold">M</span>
+            <span class="mx-3 whitespace-no-wrap">Exams & Marks</span>
+        </a>
+    </li>
+
+    <li class="py-3 px-3 {{ Request::segment('2') == 'fees' ? 'active' : '' }}">
+        <a href="{{ url('/admin/fees') }}" class="flex items-center">
+            <span class="w-5 h-5 text-center font-bold">Rs</span>
+            <span class="mx-3 whitespace-no-wrap">Fee Management</span>
+        </a>
+    </li>
+
+    <li class="py-3 px-3 {{ Request::segment('2') == 'teacher-credentials' ? 'active' : '' }}">
+        <a href="{{ url('/admin/teacher-credentials') }}" class="flex items-center">
+            <span class="w-5 h-5 text-center font-bold">ID</span>
+            <span class="mx-3 whitespace-no-wrap">Teacher Logins</span>
+        </a>
+    </li>
+
+    <li class="py-3 px-3 {{ Request::segment('2') == 'subscription' ? 'active' : '' }}">
+        <a href="{{ url('/admin/subscription/renew') }}" class="flex items-center">
+            <span class="w-5 h-5 text-center font-bold">S</span>
+            <span class="mx-3 whitespace-no-wrap">Subscription</span>
+        </a>
+    </li>
+
     <!-- start -->
     @php
         $class='';

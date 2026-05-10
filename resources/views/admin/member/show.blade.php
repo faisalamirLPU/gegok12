@@ -29,12 +29,12 @@
                                 </li>
 
                                  <li class="mx-2">
-                                    
+
 
                                     <form action="{{ url('/admin/student/delete', ['name'=>$user->name]) }}" method="POST" class="text-white text-xs flex items-center bg-red-600 rounded p-1" id="delete">
                                         @csrf
                                         @method('delete')
-                                   
+
                                        <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" xml:space="preserve" class="w-3 h-3 fill-current text-white"><g><g><g><polygon points="353.574,176.526 313.496,175.056 304.807,412.34 344.885,413.804"></polygon><rect x="235.948" y="175.791" width="40.104" height="237.285"></rect><polygon points="207.186,412.334 198.497,175.049 158.419,176.52 167.109,413.804"></polygon> <path d="M17.379,76.867v40.104h41.789L92.32,493.706C93.229,504.059,101.899,512,112.292,512h286.74 c10.394,0,19.07-7.947,19.972-18.301l33.153-376.728h42.464V76.867H17.379z M380.665,471.896H130.654L99.426,116.971h312.474 L380.665,471.896z"></path></g></g></g> <g><g><path d="M321.504,0H190.496c-18.428,0-33.42,14.992-33.42,33.42v63.499h40.104V40.104h117.64v56.815h40.104V33.42 C354.924,14.992,339.932,0,321.504,0z"></path></g></g></svg>
                                         <button type="submit" class="mx-1">Delete</button>
                                     </form>
@@ -192,7 +192,7 @@
                      </div>
                      <div id="student-profile-menu" class="hidden absolute top-0 right-0 bg-white shadow mt-10 rounded">
                     <div class="flex flex-col text-xs w-40 my-1">
-                    
+
                         @if(optional($user)->status == "inactive")
                             <a href="#" rel="{{ url('/admin/user/updateStatus/'.$user->name) }} " class="capitalize text-teal-500 rounded px-4 py-1 font-medium activate my-1 lg:my-0 md:my-0 mr-2 " value="active" id="status">Activate</a>
                         @else
@@ -203,7 +203,7 @@
                          @if(optional($user)->status != "exit")
                             <a href="#" rel="{{ url('/admin/user/updateStatus/'.$user->name) }} " class="capitalize text-teal-500 rounded px-4 py-1 font-medium activate my-1 lg:my-0 md:my-0 mr-2 " value="exit" id="status">Exit</a>
                         @endif
-                    
+
                         @if($user->email != null)
                             @if($user->email_verified == 1)
                                 <a href="#" rel="{{ url('/admin/user/resetPassword/'.$user->id) }}" class="capitalize text-gray-700 rounded px-4 py-1 mr-2 font-medium reset my-1 lg:my-0 md:my-0">reset Password</a>
@@ -235,9 +235,56 @@
                 </div>
                 <div class="bg-white shadow my-5">
                     <profile-tab url="{{url('/')}}" entity_id="{{ $user->id }}" school_id="{{ $user->school_id }}" name="{{ $user->name }}" mode="admin"></profile-tab>
-                   
+
                     <div id="profile"></div>
                     <div id="notes"></div>
+                </div>
+                <div class="bg-white shadow my-5 p-5">
+                    <h2 class="text-xl font-semibold mb-3">Fee invoices</h2>
+                    @if(isset($fees) && $fees->count())
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b bg-gray-50">
+                                        <th class="text-left py-3 px-4">Fee</th>
+                                        <th class="text-left py-3 px-4">Period</th>
+                                        <th class="text-left py-3 px-4">Amount</th>
+                                        <th class="text-left py-3 px-4">Due</th>
+                                        <th class="text-left py-3 px-4">Status</th>
+                                        <th class="text-left py-3 px-4">Payment</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($fees as $invoice)
+                                        <tr class="border-b hover:bg-gray-50">
+                                            <td class="py-3 px-4">{{ optional($invoice->feeHead)->name }}</td>
+                                            <td class="py-3 px-4">{{ $invoice->fee_month ? $invoice->fee_month.'/'.$invoice->fee_year : 'One time' }}</td>
+                                            <td class="py-3 px-4">{{ number_format((float) $invoice->amount, 2) }}</td>
+                                            <td class="py-3 px-4">{{ optional($invoice->due_date)->format('d-m-Y') ?? '-' }}</td>
+                                            <td class="py-3 px-4">{{ ucwords($invoice->status) }}</td>
+                                            <td class="py-3 px-4">
+                                                @if($invoice->status !== 'paid')
+                                                    <form method="POST" action="{{ url('/admin/fees/invoices/'.$invoice->id.'/paid') }}" class="flex flex-col gap-2">
+                                                        @csrf
+                                                        <input name="payment_mode" placeholder="Mode" class="border px-2 py-1 w-full md:w-32">
+                                                        <input name="transaction_reference" placeholder="Reference" class="border px-2 py-1 w-full md:w-40">
+                                                        <button class="text-blue-600">Mark Paid</button>
+                                                    </form>
+                                                @else
+                                                    <div class="flex flex-col gap-2">
+                                                        <span class="text-gray-700">Paid on {{ optional($invoice->paid_at)->format('d-m-Y') }}</span>
+                                                        <a href="{{ route('core.fees.receipt', $invoice->id) }}" class="text-blue-600">Print receipt</a>
+                                                    </div>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <p class="text-gray-600">No fee invoices available for this student.</p>
+                    @endif
                 </div>
             </div>
         </div>
@@ -263,7 +310,7 @@
                 },
                 allowOutsideClick: false,
             }).then((willChange) => {
-                if (willChange) 
+                if (willChange)
                 {
                     $.ajax({
                         url: link,
@@ -281,11 +328,11 @@
                             });
                         }
                     })
-                } 
-                else 
+                }
+                else
                 {
                     swal("Cancelled");
-                } 
+                }
             });
         });
     });
@@ -304,7 +351,7 @@
                 },
                 allowOutsideClick: false,
             }).then((willChange) => {
-                if (willChange) 
+                if (willChange)
                 {
                     $.ajax({
                         url: link,
@@ -325,10 +372,10 @@
                         }
                     })
                 }
-                else 
+                else
                 {
                     swal("Cancelled");
-                } 
+                }
             });
         });
     });
@@ -346,7 +393,7 @@
                 },
                 allowOutsideClick: false,
             }).then((willChange) => {
-                if (willChange) 
+                if (willChange)
                 {
                     $.ajax({
                         url: link,
@@ -367,10 +414,10 @@
                         }
                     })
                 }
-                else 
+                else
                 {
                     swal("Cancelled");
-                } 
+                }
             });
         });
     });
@@ -389,7 +436,7 @@
                 },
                 allowOutsideClick: false,
             }).then((willChange) => {
-                if (willChange) 
+                if (willChange)
                 {
                     $.ajax({
                         url: link,
@@ -402,10 +449,10 @@
                         }
                     })
                 }
-                else 
+                else
                 {
                     swal("Cancelled");
-                } 
+                }
             });
         });
     });

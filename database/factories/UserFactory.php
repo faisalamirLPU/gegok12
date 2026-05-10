@@ -82,6 +82,24 @@ class UserFactory extends Factory
     }
 
     /**
+     * State: Super Admin
+     *
+     * Creates a user with Super Admin/Site Admin role (usergroup_id = 1).
+     * Automatically ensures the Super Admin usergroup exists in database.
+     *
+     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     */
+    public function superAdmin()
+    {
+        return $this->state(function (array $attributes) {
+            Usergroup::firstOrCreate(['id' => User::SITEADMIN_USERGROUP_ID], ['name' => 'Super Admin']);
+            return [
+                'usergroup_id' => User::SITEADMIN_USERGROUP_ID,
+            ];
+        });
+    }
+
+    /**
      * State: Librarian
      *
      * Creates a user with Librarian role (usergroup_id = 8).

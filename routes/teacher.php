@@ -30,7 +30,7 @@ Route::get( '/assignment/delete/{id}', 'AssignmentController@destroy' );*/
 //without approval assignment -- do not remove
 
 Route::group([ 'namespace' =>'Approval' ], function () {
-    //with approval  
+    //with approval
     //assignment
         //index
         Route::get( '/assignment/list/{status}', 'AssignmentController@showList' );
@@ -55,7 +55,7 @@ Route::group([ 'namespace' =>'Approval' ], function () {
             //reject
             Route::post('/assignment/reject/{id}', 'AssignmentApprovalController@reject');
         });
-    //with approval  
+    //with approval
 });
 
 //student assignment
@@ -195,6 +195,13 @@ Route::get('/standardLink/list','StandardsLinkController@list');
 Route::get('/standardLinks','StandardsLinkController@index');
 Route::get('/standardLink/show/{id}','StandardsLinkController@show');
 
+//teacher exam access
+Route::get('/exams', '\App\Http\Controllers\Admin\CoreExamController@index');
+Route::get('/exams/{exam}', '\App\Http\Controllers\Admin\CoreExamController@show');
+Route::get('/exams/{exam}/subjects/{subject}/marks', '\App\Http\Controllers\Admin\CoreExamController@marks');
+Route::post('/exams/{exam}/subjects/{subject}/marks', '\App\Http\Controllers\Admin\CoreExamController@saveMarks');
+Route::get('/exams/{exam}/marksheet/{student}', '\App\Http\Controllers\Admin\CoreExamController@marksheet');
+
 //show
 Route::get( '/notice/show/list', 'StandardsLinkController@showNotice' );
 Route::get( '/standardLink/show/timetable/{id}', 'StandardsLinkController@showTimetable' );
@@ -245,7 +252,7 @@ Route::get( '/attendance/export/{standardLink_id}', 'AttendanceController@export
 //without approval homework -- do not remove
 
 Route::group([ 'namespace' =>'Approval' ], function () {
-    //with approval  
+    //with approval
     //homework
         //index
         Route::get( '/homework/show/{status}/list', 'HomeWorkController@showList' );
@@ -267,7 +274,7 @@ Route::group([ 'namespace' =>'Approval' ], function () {
         //delete
         Route::get( '/homework/delete/{id}', 'HomeWorkController@destroy' );
         Route::get( '/homework/viewers/{id}', 'HomeWorkController@view' );
-    //with approval  
+    //with approval
 });
 
 //student homework

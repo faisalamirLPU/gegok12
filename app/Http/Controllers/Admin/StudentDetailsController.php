@@ -82,9 +82,9 @@ class StudentDetailsController extends Controller
     {
         //
         $student = User::with('userprofile')->where('name', $name)->first();
-      
+
         $parents = UserRelationResource::collection($student->parents);
-         
+
         return $parents;
     }
 
@@ -101,11 +101,11 @@ class StudentDetailsController extends Controller
         $student = User::with('userprofile')->where('name', $name)->first();
         $parents=StudentParentLink::where('student_id',$student->id)->pluck('parent_id')->toArray();
        $siblings=StudentParentLink::where('student_id','!=',$student->id)->whereIn('parent_id',$parents)->get()->unique('student_id');
-      
+
         $siblings = SiblingListResource::collection($siblings);
         return $siblings;
     }
-    
+
     /**
      * Show activity logs where student is subject.
      *
@@ -121,15 +121,15 @@ class StudentDetailsController extends Controller
             $activitylog = ActivityLog::where('subject_id',$user->userprofile->id)->orWhere('subject_id',$user->members[0]['id'])->paginate(5);
 
             $activitylog = ActivityLogResource::collection($activitylog);
-         
+
             return $activitylog;
         }
         else
         {
             abort(403);
-        } 
+        }
     }
-    
+
     /**
      * Show activity logs where student is causer.
      *
@@ -145,13 +145,13 @@ class StudentDetailsController extends Controller
             $activitylog = ActivityLog::where('causer_id',$user->userprofile->id)->orWhere('causer_id',$user->members[0]['id'])->paginate(5);
 
             $activitylog = ActivityLogResource::collection($activitylog);
-         
+
             return $activitylog;
         }
         else
         {
             abort(403);
-        } 
+        }
     }
 
     /**
@@ -164,9 +164,9 @@ class StudentDetailsController extends Controller
     {
         //
         $student = User::with('disciplineUser','disciplineTeacher')->where('name', $name)->first();
-      
+
         $discipline = DisciplineResource::collection($student->disciplineUser);
-         
+
         return $discipline;
     }
 
@@ -180,9 +180,9 @@ class StudentDetailsController extends Controller
     {
         //
         $student = User::where('name', $name)->first();
-      
+
         $attendances = AttendanceUserResource::collection($student->AttendanceUserAbsent);
-         
+
         return $attendances;
     }
 
@@ -200,7 +200,7 @@ class StudentDetailsController extends Controller
         $studentacademic = StudentAcademic::where('user_id',$student->id)->latest()->first();
 
         $medicals = [];
-        
+
         $medicals['height']                     = number_format($studentacademic->height?? 0,2);
         $medicals['weight']                     = number_format($studentacademic->weight?? 0,2);
         $medicals['medication_problems']        = $studentacademic->medication_problems == 'null' ? null:$studentacademic->medication_problems;
@@ -209,7 +209,7 @@ class StudentDetailsController extends Controller
         $medicals['food_allergies']             = $studentacademic->food_allergies == 'null' ? null:$studentacademic->food_allergies;
         $medicals['other_allergies']            = $studentacademic->other_allergies == 'null' ? null:$studentacademic->other_allergies;
         $medicals['other_medical_information']  = $studentacademic->other_medical_information == 'null' ? null:$studentacademic->other_medical_information;
-         
+
         return $medicals;
     }
 
@@ -234,13 +234,13 @@ class StudentDetailsController extends Controller
 
             $fees = \Gegok12\Fee\Models\Fee::where([['school_id',$school_id],['academic_year_id',$academic_year->id]])->where('standardLink_id',$student->studentAcademicLatest->standardLink_id)->orWhere('standardLink_id',null)->orderBy('start_date','DESC')->paginate(5);
         }
-        
+
         if(class_exists('Gegok12\Fee\Http\Resources\UserFees'))
         {
             $feepayments = \Gegok12\Fee\Http\Resources\UserFees::collection($fees);
         }
 
-         
+
         return $feepayments;
     }
 
@@ -253,7 +253,7 @@ class StudentDetailsController extends Controller
     public function createMedicalHistory($name)
     {
         //
-        $user = User::where('name', $name)->first(); 
+        $user = User::where('name', $name)->first();
 
         return view('/admin/member/create_medical_history' , ['user' => $user]);
     }
@@ -282,7 +282,7 @@ class StudentDetailsController extends Controller
             $studentacademic->food_allergies             = $request->food_allergies == 'null' ? null:$request->food_allergies;
             $studentacademic->other_allergies            = $request->other_allergies == 'null' ? null:$request->other_allergies;
             $studentacademic->other_medical_information  = $request->other_medical_information == 'null' ? null:$request->other_medical_information;
-                 
+
             $studentacademic->save();
 
             $message = trans('messages.update_success_msg',['module' => 'Student Medical History']);
@@ -294,7 +294,7 @@ class StudentDetailsController extends Controller
               ['ip' => $ip, 'details' => $_SERVER['HTTP_USER_AGENT'] ],
               LOGNAME_EDIT_STUDENT_MEDICAL_HISTORY,
               $message
-            ); 
+            );
 
             $res['success'] = $message;
             return $res;
@@ -305,7 +305,7 @@ class StudentDetailsController extends Controller
             //dd($e->getMessage());
         }
     }
-    
+
     /**
      * Display books lent to a student.
      *
@@ -330,8 +330,8 @@ class StudentDetailsController extends Controller
      */
     public function show($name)
     {
-        // 
-        $user = User::with('studentAcademicLatest')->where('name',$name)->first(); 
+        //
+        $user = User::with(['studentAcademicLatest', 'coreFeeInvoices.feeHead'])->where('name',$name)->first();
         $parents = $user->parent;
         if(Gate::allows('member',$user))
         {
@@ -343,13 +343,13 @@ class StudentDetailsController extends Controller
             {
                 $prev_url = url('/admin/students');
             }
-            
-            return view('/admin/member/show',['user' => $user , 'parents' => $parents , 'prev_url' => $prev_url]);
+
+            return view('/admin/member/show',['user' => $user , 'parents' => $parents , 'fees' => $user->coreFeeInvoices ?? collect(), 'prev_url' => $prev_url]);
         }
         else
         {
             abort(403);
-        } 
+        }
     }
 
     /**
@@ -366,7 +366,7 @@ class StudentDetailsController extends Controller
 
        return  Student::getStudentMark($studentId,$examId);
     }
-    
+
     /**
      * Display all exam marks of a student.
      *
@@ -381,7 +381,7 @@ class StudentDetailsController extends Controller
 
         return  Student::getAllMarks($studentId);
     }
-    
+
     /**
      * Compare marks between two latest exams for a student.
      *
@@ -410,7 +410,7 @@ class StudentDetailsController extends Controller
         $section_id=$standard->section_id;
         //dd($standard_id);
         //$subjects=$subjects['name'];
-    
+
         //dd($classCount);
         $subjects=Subject::where('standard_id',$standard_id)->where('section_id',$section_id)->pluck('name')->toArray();
         $marksone=Mark::where('user_id',$studentId)->where('exam_id',$examIdOne)->pluck('obtained_marks')->toArray();
@@ -423,7 +423,7 @@ class StudentDetailsController extends Controller
         $examOneAverage=Mark::where([['standard_id',$standardId],['exam_id',$examIdOne]])->groupBy('subject_id')->selectRaw('round(avg(obtained_marks)) as avg')->pluck('avg');
 
         $examTwoAverage=Mark::where([['standard_id',$standardId],['exam_id',$examIdTwo]])->groupBy('subject_id')->selectRaw('round(avg(obtained_marks)) as avg')->pluck('avg');
-        
+
          return view('/admin/exammark/process' , ['subjects'=>$subjects,'marksone'=>$marksone,'markstwo'=>$markstwo,'examone'=>$examone,'examtwo'=>$examtwo,'examOneAverage'=>$examOneAverage,'examTwoAverage'=>$examTwoAverage]);
 
         }
@@ -432,7 +432,7 @@ class StudentDetailsController extends Controller
             Log::info($e->getMessage());
             dd($e->getMessage());
         }
-    } 
+    }
 
     /**
      * Display student marks graph for all exams.
@@ -460,10 +460,10 @@ class StudentDetailsController extends Controller
         else{
             return back();
         }
-         
+
           //dd($subjects);
         $subjects_array[]=array_merge(['Subjects'],$subjects,['average']);
-        
+
          $data=[];
          foreach ($examss as $key => $exam) {
 
@@ -471,7 +471,7 @@ class StudentDetailsController extends Controller
             {
                 $exam_result=\Gegok12\Exam\Models\Mark::where('user_id',$studentId)->where('exam_id',$exam->id);
             }
-           
+
            $exam_marks=$exam_result->pluck('obtained_marks')->toArray();
            $exam_avg=$exam_result->avg('obtained_marks');
 
@@ -483,7 +483,7 @@ class StudentDetailsController extends Controller
             {
                 $markings=\Gegok12\Exam\Models\Mark::where([['school_id',$school_id],['academic_year_id',$academic_year->id],['standard_id',$standardId],['exam_id',$exam->id],['subject_id',$seller->subject_id]])->first();
             }
-            
+
 
                 if($markings!=null){
                 return $markings->obtained_marks;
@@ -517,13 +517,13 @@ class StudentDetailsController extends Controller
             $studentAcademic->bus_pass ="yes";
             $studentAcademic->update();
         }
-            
+
            return Redirect::to('admin/student/buspass/show');
         } catch (Exception $e) {
             Log::info($e->getMessage());
-            
-        } 
-        
+
+        }
+
     }
     /**
      * Display bus pass details for a student.
@@ -534,13 +534,13 @@ class StudentDetailsController extends Controller
       public function showbus($name)
     {
 
-     
+
         $studentlist=StudentAcademic::where('bus_pass', 'yes')->first();
         $academic = SiteHelper::getAcademicYear(Auth::user()->school_id);
         $user = User::where('name',$name)->first();
 
         return view('admin.buspass.show-bus_pass',compact('user','academic'));
-        
+
     }
     /**
      * Print student bus pass as PDF.
@@ -556,8 +556,8 @@ class StudentDetailsController extends Controller
         $student = User::where('name',$name)->first();
 
         $pdf = PDF::loadView('admin/buspass/showprint', compact('student','academic'));
- 
-        return $pdf->stream('buspass.pdf', array('Attachment'=>0)); 
-        
+
+        return $pdf->stream('buspass.pdf', array('Attachment'=>0));
+
     }
 }
