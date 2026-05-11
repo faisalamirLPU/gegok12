@@ -9,80 +9,59 @@ use Illuminate\Http\Request;
 
 class FeePaymentController extends Controller
 {
-    protected FeePaymentService $feePaymentService;
+    public function index(Request $request)
+{
+    $fees = Fee::query()
 
-    public function __construct(
-        FeePaymentService $feePaymentService
-    ) {
-        $this->feePaymentService = $feePaymentService;
-    }
+        ->with([
+            'student.userprofile',
+            'studentAcademic.standardLink.standard',
+            'studentAcademic.standardLink.section'
+        ])
 
-    /*
-    |--------------------------------------------------------------------------
-    | Invoice List
-    |--------------------------------------------------------------------------
-    */
+        ->where(
+            'school_id',
+            auth()->user()->school_id
+        )
 
-    public function index()
-    {
-        $fees = Fee::query()
+        ->where(
+            'academic_year_id',
+            \App\Helpers\SiteHelper::getAcademicYear(
+                auth()->user()->school_id
+            )->id
+        )
 
-            ->latest()
+        ->when(
+            $request->search,
+            function ($query, $search) {
 
-            ->paginate(20);
+                $query->whereHas(
+                    'student.userprofile',
+                    function ($q) use ($search) {
 
-        return view(
-            'admin.finance.payments.index',
-            compact('fees')
-        );
-    }
+                        $q->where(
+                            'firstname',
+                            'like',
+                            "%{$search}%"
+                        )
 
-    /*
-    |--------------------------------------------------------------------------
-    | Payment Form
-    |--------------------------------------------------------------------------
-    */
+                        ->orWhere(
+                            'lastname',
+                            'like',
+                            "%{$search}%"
+                        );
+                    }
+                );
+            }
+        )
 
-    public function create(Fee $fee)
-    {
-        return view(
-            'admin.finance.payments.create',
-            compact('fee')
-        );
-    }
+        ->latest()
 
-    /*
-    |--------------------------------------------------------------------------
-    | Store Payment
-    |--------------------------------------------------------------------------
-    */
+        ->paginate(20);
 
-    public function store(
-        Request $request,
-        Fee $fee
-    ) {
-
-        $validated = $request->validate([
-
-            'amount' => 'required|numeric|min:1',
-
-            'payment_method' => 'required|string',
-
-            'transaction_id' => 'nullable|string',
-
-            'remarks' => 'nullable|string',
-        ]);
-
-        $this->feePaymentService
-            ->collectPayment($fee, $validated);
-
-        return redirect()
-
-            ->route('finance.payments.index')
-
-            ->with(
-                'success',
-                'Payment collected successfully.'
-            );
-    }
+    return view(
+        'admin.finance.payments.index',
+        compact('fees')
+    );
+}
 }
