@@ -9,14 +9,25 @@ class FeeStructureItem extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = [
+        protected $fillable = [
+
+        'school_id',
+        'academic_year_id',
+
         'fee_structure_id',
+
         'fee_category_id',
+
         'fine_rule_id',
+
         'amount',
+
         'due_date',
+
         'is_optional',
+
         'sort_order',
+
         'created_by',
         'updated_by'
     ];

@@ -34,7 +34,7 @@ return new class extends Migration
                 'monthly_cycle',
                 'custom'
             ])->default('monthly_cycle');
-
+            $table->integer('due_day')->nullable();
             $table->boolean('status')->default(true);
 
             $table->unsignedBigInteger('created_by')->nullable();

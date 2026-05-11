@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Admin\Finance;
 
 use App\Http\Controllers\Controller;
@@ -65,7 +64,7 @@ class FeeCategoryController extends Controller
     public function edit(FeeCategory $feeCategory)
     {
         return view(
-            'finance.fee-categories.edit',
+            'admin.finance.fee-categories.edit',
             compact('feeCategory')
         );
     }

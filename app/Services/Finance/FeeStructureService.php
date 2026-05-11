@@ -21,6 +21,7 @@ class FeeStructureService
                 'description' => $data['description'] ?? null,
                 'installment_type' => $data['installment_type'],
                 'due_type' => $data['due_type'],
+                'due_day' => $data['due_day'] ?? null,
                 'status' => true,
             ]);
 

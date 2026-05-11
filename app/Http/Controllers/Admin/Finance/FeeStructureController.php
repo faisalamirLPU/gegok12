@@ -1,15 +1,14 @@
 <?php
-
 namespace App\Http\Controllers\Admin\Finance;
 
+use App\Helpers\SiteHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\StoreFeeStructureRequest;
 use App\Models\FeeCategory;
 use App\Models\FeeStructure;
-use App\Services\Finance\FeeStructureService;
-use App\Models\Standard;
 use App\Models\Section;
-use App\Helpers\SiteHelper;
+use App\Models\StandardLink;
+use App\Services\Finance\FeeStructureService;
 use Illuminate\Support\Facades\Auth;
 
 class FeeStructureController extends Controller
@@ -42,20 +41,37 @@ class FeeStructureController extends Controller
 
         $academicYear = SiteHelper::getAcademicYear($schoolId);
 
-        $classes = Standard::where([
-            ['school_id', $schoolId],
-            ['academic_year_id', $academicYear->id]
-        ])->get();
+        $standardLinks = StandardLink::query()
 
-        $sections = Section::where([
-            ['school_id', $schoolId],
-            ['academic_year_id', $academicYear->id]
-        ])->get();
+            ->with([
+                'standard',
+                'section',
+            ])
+
+            ->where('school_id', $schoolId)
+
+            ->where('academic_year_id', $academicYear->id)
+
+            ->where('status', true)
+
+            ->get();
+
+        $classes = $standardLinks;
+
+        $sections = Section::query()
+
+            ->where('school_id', $schoolId)
+
+            ->get();
 
         $feeCategories = FeeCategory::query()
+
             ->currentSchool()
+
             ->currentAcademicYear()
+
             ->active()
+
             ->get();
 
         return view(
@@ -75,7 +91,7 @@ class FeeStructureController extends Controller
         );
 
         return redirect()
-            ->route('admin.finance.fee-structures.index')
+            ->route('finance.fee-structures.index')
             ->with('success', 'Fee structure created successfully.');
     }
 }
