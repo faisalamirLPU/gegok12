@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Admin\Finance;
 
 use App\Helpers\SiteHelper;
@@ -41,45 +42,34 @@ class FeeStructureController extends Controller
 
         $academicYear = SiteHelper::getAcademicYear($schoolId);
 
-        $standardLinks = StandardLink::query()
-
-            ->with([
-                'standard',
-                'section',
-            ])
-
+        $classes = StandardLink::query()
+            ->with('standard')
             ->where('school_id', $schoolId)
-
             ->where('academic_year_id', $academicYear->id)
-
             ->where('status', true)
-
-            ->get();
-
-        $classes = $standardLinks;
+            ->get()
+            ->unique('standard_id')
+            ->values();
 
         $sections = Section::query()
-
             ->where('school_id', $schoolId)
-
             ->get();
 
         $feeCategories = FeeCategory::query()
-
             ->currentSchool()
-
             ->currentAcademicYear()
-
             ->active()
-
             ->get();
+
+        $structure = new FeeStructure();
 
         return view(
             'admin.finance.fee-structures.create',
             compact(
                 'classes',
                 'sections',
-                'feeCategories'
+                'feeCategories',
+                'structure'
             )
         );
     }

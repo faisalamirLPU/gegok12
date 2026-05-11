@@ -1,12 +1,11 @@
 <?php
-
 namespace App\Models;
 
+use App\Traits\Finance\BelongsToAcademicYear;
+use App\Traits\Finance\BelongsToSchool;
+use App\Traits\Finance\TracksUserActions;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\Finance\BelongsToSchool;
-use App\Traits\Finance\BelongsToAcademicYear;
-use App\Traits\Finance\TracksUserActions;
 
 class FeeStructure extends Model
 {
@@ -14,7 +13,7 @@ class FeeStructure extends Model
     use SoftDeletes,
     BelongsToSchool,
     BelongsToAcademicYear,
-    TracksUserActions;
+        TracksUserActions;
 
     protected $fillable = [
         'school_id',
@@ -27,11 +26,19 @@ class FeeStructure extends Model
         'due_type',
         'status',
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
+    public function assignments()
+    {
+        return $this->hasMany(
+            StudentFeeAssignment::class,
+            'fee_structure_id'
+        );
+    }
+
     protected $casts = [
-        'status' => 'boolean'
+        'status' => 'boolean',
     ];
 
     /*
@@ -45,7 +52,7 @@ class FeeStructure extends Model
         return $this->hasMany(FeeStructureItem::class);
     }
 
-    public function class()
+    public function class ()
     {
         return $this->belongsTo(Standard::class, 'class_id');
     }

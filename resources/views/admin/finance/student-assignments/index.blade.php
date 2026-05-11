@@ -1,6 +1,6 @@
 @extends('layouts.admin.layout')
 
-@section('title', 'Student Assignments')
+@section('title', 'Student Fee Assignments')
 
 @section('content')
 
@@ -8,7 +8,7 @@
 
     @include('admin.finance.components.header', [
         'title' => 'Student Fee Assignments',
-        'subtitle' => 'Assign fee structures to students'
+        'subtitle' => 'Manage assigned student fee structures'
     ])
 
     <div class="card border-0 shadow-sm">
@@ -24,8 +24,17 @@
                         <tr>
 
                             <th>Student</th>
-                            <th>Class</th>
-                            <th>Structure</th>
+
+                            <th>Fee Structure</th>
+
+                            <th>Assigned Amount</th>
+
+                            <th>Paid</th>
+
+                            <th>Balance</th>
+
+                            <th>Due Date</th>
+
                             <th>Status</th>
 
                         </tr>
@@ -34,11 +43,69 @@
 
                     <tbody>
 
-                        @include('admin.finance.partials.table-empty')
+                        @forelse($assignments as $assignment)
+
+                            <tr>
+
+                                <td>
+                                    {{ $assignment->student->name ?? '-' }}
+                                </td>
+
+                                <td>
+                                    {{ $assignment->feeStructure->title ?? '-' }}
+                                </td>
+
+                                <td>
+                                    ₹{{ number_format($assignment->assigned_amount, 2) }}
+                                </td>
+
+                                <td>
+                                    ₹{{ number_format($assignment->paid_amount, 2) }}
+                                </td>
+
+                                <td>
+                                    ₹{{ number_format($assignment->balance, 2) }}
+                                </td>
+
+                                <td>
+                                    {{ optional($assignment->due_date)->format('d M Y') }}
+                                </td>
+
+                                <td>
+
+                                    @if($assignment->status == 1)
+
+                                        <span class="badge bg-success">
+                                            Paid
+                                        </span>
+
+                                    @else
+
+                                        <span class="badge bg-warning">
+                                            Pending
+                                        </span>
+
+                                    @endif
+
+                                </td>
+
+                            </tr>
+
+                        @empty
+
+                            @include('admin.finance.partials.table-empty')
+
+                        @endforelse
 
                     </tbody>
 
                 </table>
+
+            </div>
+
+            <div class="mt-3">
+
+                {{ $assignments->links() }}
 
             </div>
 

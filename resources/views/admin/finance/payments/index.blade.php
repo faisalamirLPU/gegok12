@@ -1,51 +1,97 @@
 @extends('layouts.admin.layout')
 
-@section('title', 'Payments')
-
 @section('content')
 
-<div class="container-fluid">
+<div class="container">
 
-    @include('admin.finance.components.header', [
-        'title' => 'Payments',
-        'subtitle' => 'Manage finance collections'
-    ])
+    <h2>Fee Invoices</h2>
 
-    <div class="card border-0 shadow-sm">
+    @if(session('success'))
 
-        <div class="card-body">
-
-            <div class="table-responsive">
-
-                <table class="table align-middle">
-
-                    <thead class="table-light">
-
-                        <tr>
-
-                            <th>Receipt No</th>
-                            <th>Student</th>
-                            <th>Amount</th>
-                            <th>Method</th>
-                            <th>Date</th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                        @include('admin.finance.partials.table-empty')
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
+        <div class="alert alert-success">
+            {{ session('success') }}
         </div>
 
-    </div>
+    @endif
+
+    <table class="table">
+
+        <thead>
+            <tr>
+                <th>Invoice</th>
+                <th>Student</th>
+                <th>Total</th>
+                <th>Paid</th>
+                <th>Balance</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            @foreach($fees as $fee)
+
+                <tr>
+
+                    <td>
+                        {{ $fee->invoice_no }}
+                    </td>
+
+                    <td>
+                        {{ $fee->user_id }}
+                    </td>
+
+                    <td>
+                        ₹{{ number_format($fee->total_amount, 2) }}
+                    </td>
+
+                    <td>
+                        ₹{{ number_format($fee->paid_amount, 2) }}
+                    </td>
+
+                    <td>
+                        ₹{{ number_format($fee->balance, 2) }}
+                    </td>
+
+                    <td>
+
+                        @if($fee->status == 0)
+
+                            Unpaid
+
+                        @elseif($fee->status == 1)
+
+                            Partial
+
+                        @else
+
+                            Paid
+
+                        @endif
+
+                    </td>
+
+                    <td>
+
+                        <a
+                            href="{{ route('finance.payments.create', $fee->id) }}"
+                            class="btn btn-primary btn-sm"
+                        >
+                            Collect Payment
+                        </a>
+
+                    </td>
+
+                </tr>
+
+            @endforeach
+
+        </tbody>
+
+    </table>
+
+    {{ $fees->links() }}
 
 </div>
 
