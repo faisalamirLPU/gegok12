@@ -2,6 +2,49 @@
 
 include ('addon.php');
 
+use App\Http\Controllers\Admin\Finance\DashboardController;
+use App\Http\Controllers\Admin\Finance\FeeCategoryController;
+use App\Http\Controllers\Admin\Finance\FeeStructureController;
+
+Route::prefix('finance')
+    ->name('finance.')
+    ->middleware(['auth'])
+    ->group(function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Finance Dashboard
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/dashboard',
+            [DashboardController::class, 'index']
+        )->name('dashboard');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Fee Categories
+        |--------------------------------------------------------------------------
+        */
+
+        Route::resource(
+            'fee-categories',
+            FeeCategoryController::class
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Fee Structures
+        |--------------------------------------------------------------------------
+        */
+
+        Route::resource(
+            'fee-structures',
+            FeeStructureController::class
+        );
+    });
+
 
 Route::get( '/dashboard', 'DashboardController@index' )->name( 'dashboard' );
 Route::get( '/dashboard/event', 'DashboardController@event' );

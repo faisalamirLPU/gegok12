@@ -1,0 +1,28 @@
+<?php
+
+namespace App\Traits\Finance;
+
+use Illuminate\Support\Facades\Auth;
+
+trait TracksUserActions
+{
+    protected static function bootTracksUserActions()
+    {
+        static::creating(function ($model) {
+
+            if (Auth::check()) {
+
+                $model->created_by = Auth::id();
+                $model->updated_by = Auth::id();
+            }
+        });
+
+        static::updating(function ($model) {
+
+            if (Auth::check()) {
+
+                $model->updated_by = Auth::id();
+            }
+        });
+    }
+}
