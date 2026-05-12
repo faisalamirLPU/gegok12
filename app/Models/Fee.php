@@ -1,28 +1,27 @@
 <?php
-
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use App\Models\User;
 use App\Models\StudentAcademic;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 
 class Fee extends Model
 {
     public function student()
-{
-    return $this->belongsTo(
-        User::class,
-        'user_id'
-    );
-}
+    {
+        return $this->belongsTo(
+            User::class,
+            'user_id'
+        );
+    }
 
-public function studentAcademic()
-{
-    return $this->belongsTo(
-        StudentAcademic::class,
-        'student_fee_assignment_id'
-    );
-}
+    public function studentAcademic()
+    {
+        return $this->belongsTo(
+            StudentAcademic::class,
+            'student_fee_assignment_id'
+        );
+    }
     protected $fillable = [
 
         'school_id',

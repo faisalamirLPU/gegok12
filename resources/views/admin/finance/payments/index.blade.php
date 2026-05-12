@@ -1,165 +1,112 @@
 @extends('layouts.admin.layout')
 
-@section('title', 'Fee Invoices')
+@section('title', 'Fee Payments')
 
 @section('content')
 
-<div class="relative">
+<div class="max-w-7xl mx-auto px-4 py-6">
 
     {{-- Header --}}
-    <div class="flex flex-row justify-between">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
 
         <div>
 
-            <h1 class="admin-h1 my-3">
-                Fee Invoices
+            <h1 class="text-3xl font-bold text-gray-800">
+                Fee Payments
             </h1>
 
-        </div>
-
-    </div>
-
-
-    {{-- Success Message --}}
-    @if(session('success'))
-
-        <div class="mb-4 px-4 py-3 bg-green-100 border border-green-300 text-green-700 rounded">
-
-            {{ session('success') }}
+            <p class="text-gray-500 mt-1">
+                Manage invoices and collect payments
+            </p>
 
         </div>
-
-    @endif
-
-
-    {{-- Search + Filters --}}
-    <div class="flex flex-wrap items-center justify-between mb-4">
-
-        {{-- Status Filters --}}
-        <div class="flex flex-wrap gap-2">
-
-            <button class="border bg-white px-5 py-2 shadow-sm text-gray-700 status-filter"
-                    data-filter="">
-
-                ALL
-
-            </button>
-
-            <button class="border bg-white px-5 py-2 shadow-sm text-gray-700 status-filter"
-                    data-filter="unpaid">
-
-                UNPAID
-
-            </button>
-
-            <button class="border bg-white px-5 py-2 shadow-sm text-gray-700 status-filter"
-                    data-filter="partial">
-
-                PARTIAL
-
-            </button>
-
-            <button class="border bg-white px-5 py-2 shadow-sm text-gray-700 status-filter"
-                    data-filter="paid">
-
-                PAID
-
-            </button>
-
-        </div>
-
 
         {{-- Search --}}
-        <div class="mt-3 md:mt-0">
+        <form method="GET" class="mt-4 md:mt-0">
 
-            <input type="text"
-                   id="searchInput"
-                   placeholder="Search invoice or student..."
-                   class="border px-4 py-2 bg-white w-80 focus:outline-none">
+            <input
+                type="text"
+                name="search"
+                value="{{ request('search') }}"
+                placeholder="Search invoice or student..."
+                class="w-80 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-600 focus:outline-none"
+            >
 
-        </div>
+        </form>
 
     </div>
 
-
     {{-- Table --}}
-    <div class="flex flex-row justify-between custom-table overflow-x-auto tableFixHead"
-         style="max-height:550px;">
+    <div class="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
 
-        <table class="w-full">
+        <div class="overflow-x-auto">
 
-            <thead class="bg-grey-light">
+            <table class="min-w-full text-sm">
 
-                <tr class="border-t-2 border-b-2">
+                <thead class="bg-gray-100 text-gray-700">
 
-                    <th class="text-left text-sm px-2 py-2 text-grey-darker">
-                        Invoice
-                    </th>
+                    <tr>
 
-                    <th class="text-left text-sm px-2 py-2 text-grey-darker">
-                        Student
-                    </th>
+                        <th class="text-left px-6 py-4 font-semibold">
+                            Invoice
+                        </th>
 
-                    <th class="text-left text-sm px-2 py-2 text-grey-darker">
-                        Class
-                    </th>
+                        <th class="text-left px-6 py-4 font-semibold">
+                            Student
+                        </th>
 
-                    <th class="text-left text-sm px-2 py-2 text-grey-darker">
-                        Total
-                    </th>
+                        <th class="text-left px-6 py-4 font-semibold">
+                            Class
+                        </th>
 
-                    <th class="text-left text-sm px-2 py-2 text-grey-darker">
-                        Paid
-                    </th>
+                        <th class="text-left px-6 py-4 font-semibold">
+                            Total
+                        </th>
 
-                    <th class="text-left text-sm px-2 py-2 text-grey-darker">
-                        Balance
-                    </th>
+                        <th class="text-left px-6 py-4 font-semibold">
+                            Paid
+                        </th>
 
-                    <th class="text-left text-sm px-2 py-2 text-grey-darker text-center">
-                        Status
-                    </th>
+                        <th class="text-left px-6 py-4 font-semibold">
+                            Balance
+                        </th>
 
-                    <th class="text-left text-sm px-2 py-2 text-grey-darker">
-                        Action
-                    </th>
+                        <th class="text-left px-6 py-4 font-semibold">
+                            Status
+                        </th>
 
-                </tr>
+                        <th class="text-left px-6 py-4 font-semibold">
+                            Action
+                        </th>
 
-            </thead>
+                    </tr>
 
+                </thead>
 
-            @if(count($fees) != 0)
+                <tbody class="divide-y divide-gray-200">
 
-                <tbody class="bg-grey-light"
-                       id="invoiceTable">
+                    @forelse($fees as $fee)
 
-                    @foreach($fees as $fee)
-
-                        <tr class="border-t-2 border-b-2 invoice-row">
+                        <tr class="hover:bg-gray-50 transition">
 
                             {{-- Invoice --}}
-                            <td class="py-3 px-2 invoice-data">
+                            <td class="px-6 py-4 font-semibold text-blue-700">
 
                                 {{ $fee->invoice_no }}
 
                             </td>
 
-
                             {{-- Student --}}
-                            <td class="py-3 px-2 student-data">
+                            <td class="px-6 py-4">
 
                                 <div class="font-semibold text-gray-800">
 
-                                    {{
-                                        ($fee->student->userprofile->firstname ?? '')
-                                        . ' ' .
-                                        ($fee->student->userprofile->lastname ?? '')
-                                    }}
+                                    {{ $fee->student->userprofile->firstname ?? '' }}
+                                    {{ $fee->student->userprofile->lastname ?? '' }}
 
                                 </div>
 
-                                <div class="text-sm text-gray-500">
+                                <div class="text-xs text-gray-500 mt-1">
 
                                     {{ $fee->student->email ?? '' }}
 
@@ -167,131 +114,71 @@
 
                             </td>
 
-
                             {{-- Class --}}
-                            <td class="py-3 px-2">
+                            <td class="px-6 py-4">
 
                                 {{ $fee->studentAcademic->standardLink->standard->name ?? '-' }}
 
-                                -
+                                @if($fee->studentAcademic->standardLink->section)
 
-                                {{ $fee->studentAcademic->standardLink->section->name ?? '-' }}
+                                    -
+                                    {{ $fee->studentAcademic->standardLink->section->name }}
+
+                                @endif
 
                             </td>
 
-
                             {{-- Total --}}
-                            <td class="py-3 px-2 font-semibold text-gray-800">
+                            <td class="px-6 py-4 font-semibold text-blue-600">
 
                                 ₹{{ number_format($fee->total_amount, 2) }}
 
                             </td>
 
-
                             {{-- Paid --}}
-                            <td class="py-3 px-2 text-green-600 font-semibold">
+                            <td class="px-6 py-4 font-semibold text-green-600">
 
                                 ₹{{ number_format($fee->paid_amount, 2) }}
 
                             </td>
 
-
                             {{-- Balance --}}
-                            <td class="py-3 px-2 font-semibold">
+                            <td class="px-6 py-4 font-semibold text-red-600">
 
-    @php
+                                ₹{{ number_format($fee->balance, 2) }}
 
-        $balance =
-            $fee->total_amount - $fee->paid_amount;
-
-    @endphp
-
-
-    @if($balance > 0)
-
-        {{-- Remaining Due --}}
-        <span class="text-red-500">
-
-            ₹{{ number_format($balance, 2) }}
-
-        </span>
-
-    @elseif($balance < 0)
-
-        {{-- Advance Amount --}}
-        <span class="text-blue-600">
-
-            Advance ₹{{ number_format(abs($balance), 2) }}
-
-        </span>
-
-    @else
-
-        {{-- Fully Paid --}}
-        <span class="text-green-600">
-
-            ₹0.00
-
-        </span>
-
-    @endif
-
-</td>
-
+                            </td>
 
                             {{-- Status --}}
-                            <td class="py-3 px-2 status-data">
+                            <td class="px-6 py-4">
 
-    @if($fee->paid_amount == 0)
+                                @if($fee->balance <= 0)
 
-        <div class="flex justify-center">
+                                    <span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700 font-semibold">
+                                        Paid
+                                    </span>
 
-            <span class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-700">
-                Unpaid
-            </span>
+                                @elseif($fee->paid_amount > 0)
 
-        </div>
+                                    <span class="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700 font-semibold">
+                                        Partial
+                                    </span>
 
-    @elseif($fee->paid_amount < $fee->total_amount)
+                                @else
 
-        <div class="flex justify-center">
+                                    <span class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-700 font-semibold">
+                                        Unpaid
+                                    </span>
 
-            <span class="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">
-                Partial
-            </span>
+                                @endif
 
-        </div>
-
-    @elseif($fee->paid_amount == $fee->total_amount)
-
-        <div class="flex justify-center">
-
-            <span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700">
-                Paid
-            </span>
-
-        </div>
-
-    @else
-
-        <div class="flex justify-center">
-
-            <span class="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-700">
-                Advance
-            </span>
-
-        </div>
-
-    @endif
-
-</td>
-
+                            </td>
 
                             {{-- Action --}}
-                            <td class="py-3 px-2">
+                            <td class="px-6 py-4">
 
                                 <a href="{{ route('finance.payments.create', $fee->id) }}"
-                                   class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+                                   class="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
 
                                     Collect Payment
 
@@ -301,118 +188,35 @@
 
                         </tr>
 
-                    @endforeach
+                    @empty
+
+                        <tr>
+
+                            <td colspan="8" class="text-center py-10 text-gray-500">
+
+                                No invoices found.
+
+                            </td>
+
+                        </tr>
+
+                    @endforelse
 
                 </tbody>
 
-            @else
+            </table>
 
-                <tbody class="bg-grey-light">
-
-                    <tr class="border-t-2 border-b-2">
-
-                        <td colspan="8"
-                            class="py-3 px-2 text-center">
-
-                            No Fee Invoices Found
-
-                        </td>
-
-                    </tr>
-
-                </tbody>
-
-            @endif
-
-        </table>
+        </div>
 
     </div>
 
-
     {{-- Pagination --}}
-    <div class="mt-4">
+    <div class="mt-6">
 
         {{ $fees->links() }}
 
     </div>
 
 </div>
-
-
-
-{{-- Dynamic Search + Filter --}}
-<script>
-
-document.addEventListener('DOMContentLoaded', function () {
-
-    const searchInput =
-        document.getElementById('searchInput');
-
-    const rows =
-        document.querySelectorAll('.invoice-row');
-
-    const filterButtons =
-        document.querySelectorAll('.status-filter');
-
-    let activeFilter = '';
-
-    function filterTable() {
-
-        const value =
-            searchInput.value.toLowerCase();
-
-        rows.forEach(row => {
-
-            const invoice =
-                row.querySelector('.invoice-data')
-                   .innerText
-                   .toLowerCase();
-
-            const student =
-                row.querySelector('.student-data')
-                   .innerText
-                   .toLowerCase();
-
-            const status =
-                row.querySelector('.status-data')
-                   .innerText
-                   .toLowerCase();
-
-            const matchesSearch =
-                invoice.includes(value) ||
-                student.includes(value);
-
-            const matchesFilter =
-                activeFilter === ''
-                    ? true
-                    : status.includes(activeFilter);
-
-            row.style.display =
-                matchesSearch && matchesFilter
-                    ? ''
-                    : 'none';
-
-        });
-
-    }
-
-    searchInput.addEventListener('keyup', filterTable);
-
-    filterButtons.forEach(button => {
-
-        button.addEventListener('click', function () {
-
-            activeFilter =
-                this.dataset.filter;
-
-            filterTable();
-
-        });
-
-    });
-
-});
-
-</script>
 
 @endsection

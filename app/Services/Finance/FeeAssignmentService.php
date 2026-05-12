@@ -2,6 +2,7 @@
 
 namespace App\Services\Finance;
 
+use App\Models\Fee;
 use App\Models\FeeStructure;
 use App\Models\StudentAcademic;
 use App\Models\StudentFeeAssignment;
@@ -18,7 +19,7 @@ class FeeAssignmentService
 
             /*
             |--------------------------------------------------------------------------
-            | Get Standard Links
+            | Fetch Standard Links
             |--------------------------------------------------------------------------
             */
 
@@ -27,6 +28,11 @@ class FeeAssignmentService
                 ->where(
                     'school_id',
                     $structure->school_id
+                )
+
+                ->where(
+                    'academic_year_id',
+                    $structure->academic_year_id
                 )
 
                 ->where(
@@ -49,17 +55,7 @@ class FeeAssignmentService
 
             /*
             |--------------------------------------------------------------------------
-            | Stop if no standard links found
-            |--------------------------------------------------------------------------
-            */
-
-            if ($standardLinks->isEmpty()) {
-                return;
-            }
-
-            /*
-            |--------------------------------------------------------------------------
-            | Get Students
+            | Fetch Students
             |--------------------------------------------------------------------------
             */
 
@@ -68,6 +64,11 @@ class FeeAssignmentService
                 ->where(
                     'school_id',
                     $structure->school_id
+                )
+
+                ->where(
+                    'academic_year_id',
+                    $structure->academic_year_id
                 )
 
                 ->whereIn(
@@ -79,11 +80,11 @@ class FeeAssignmentService
 
             /*
             |--------------------------------------------------------------------------
-            | Stop if no students found
+            | Stop if no students
             |--------------------------------------------------------------------------
             */
 
-            if ($students->isEmpty()) {
+            if ($students->count() === 0) {
                 return;
             }
 
@@ -93,30 +94,37 @@ class FeeAssignmentService
             |--------------------------------------------------------------------------
             */
 
-            $totalAmount = $structure->items->sum('amount');
+            $totalAmount =
+                $structure->items->sum('amount');
 
             /*
             |--------------------------------------------------------------------------
-            | Create Student Assignments
+            | Create Assignments + Invoices
             |--------------------------------------------------------------------------
             */
 
             foreach ($students as $student) {
 
-                StudentFeeAssignment::updateOrCreate(
+                /*
+                |--------------------------------------------------------------------------
+                | Student Assignment
+                |--------------------------------------------------------------------------
+                */
+
+                $assignment = StudentFeeAssignment::updateOrCreate(
 
                     [
+
                         'school_id' => $structure->school_id,
 
                         'academic_year_id' => $structure->academic_year_id,
 
                         'user_id' => $student->user_id,
 
-                        'fee_id' => $structure->id,
+                        'standard_link_id' => $student->standardLink_id,
                     ],
 
                     [
-                        'standard_link_id' => $student->standardLink_id,
 
                         'assigned_amount' => $totalAmount,
 
@@ -131,6 +139,62 @@ class FeeAssignmentService
                         'status' => 0,
                     ]
                 );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Create Invoice
+                |--------------------------------------------------------------------------
+                */
+
+                $invoice = Fee::updateOrCreate(
+
+                    [
+
+                        'school_id' => $structure->school_id,
+
+                        'academic_year_id' => $structure->academic_year_id,
+
+                        'user_id' => $student->user_id,
+
+                        'student_fee_assignment_id' => $assignment->id,
+                    ],
+
+                    [
+
+                        'student_academic_id' => $student->id,
+
+                        'invoice_no' => 'INV-'
+                            . now()->format('Ymd')
+                            . '-'
+                            . str_pad(
+                                $student->user_id,
+                                4,
+                                '0',
+                                STR_PAD_LEFT
+                            ),
+
+                        'total_amount' => $totalAmount,
+
+                        'paid_amount' => 0,
+
+                        'balance' => $totalAmount,
+
+                        'due_date' => now()->addMonth(),
+
+                        'status' => 0,
+                    ]
+                );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Link Fee Structure
+                |--------------------------------------------------------------------------
+                */
+
+                $assignment->update([
+
+                    'fee_id' => $structure->id
+                ]);
             }
         });
     }

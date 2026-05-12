@@ -26,12 +26,19 @@ class FeePaymentController extends Controller
 
     public function index(Request $request)
     {
+        $academicYear = SiteHelper::getAcademicYear(
+            auth()->user()->school_id
+        );
+
         $fees = Fee::query()
 
             ->with([
+
                 'student.userprofile',
+
                 'studentAcademic.standardLink.standard',
-                'studentAcademic.standardLink.section'
+
+                'studentAcademic.standardLink.section',
             ])
 
             ->where(
@@ -41,38 +48,47 @@ class FeePaymentController extends Controller
 
             ->where(
                 'academic_year_id',
-                SiteHelper::getAcademicYear(
-                    auth()->user()->school_id
-                )->id
+                $academicYear->id
             )
 
             ->when(
                 $request->search,
                 function ($query, $search) {
 
-                    $query->whereHas(
-                        'student.userprofile',
-                        function ($q) use ($search) {
+                    $query->where(function ($q) use ($search) {
 
-                            $q->where(
-                                'firstname',
-                                'like',
-                                "%{$search}%"
-                            )
+                        $q->where(
+                            'invoice_no',
+                            'like',
+                            "%{$search}%"
+                        )
 
-                            ->orWhere(
-                                'lastname',
-                                'like',
-                                "%{$search}%"
-                            );
-                        }
-                    );
+                        ->orWhereHas(
+                            'student.userprofile',
+                            function ($student) use ($search) {
+
+                                $student->where(
+                                    'firstname',
+                                    'like',
+                                    "%{$search}%"
+                                )
+
+                                ->orWhere(
+                                    'lastname',
+                                    'like',
+                                    "%{$search}%"
+                                );
+                            }
+                        );
+                    });
                 }
             )
 
             ->latest()
 
-            ->paginate(20);
+            ->paginate(20)
+
+            ->withQueryString();
 
         return view(
             'admin.finance.payments.index',
@@ -80,10 +96,9 @@ class FeePaymentController extends Controller
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
-    | Create Payment Page
+    | Create Payment
     |--------------------------------------------------------------------------
     */
 
@@ -94,7 +109,6 @@ class FeePaymentController extends Controller
             compact('fee')
         );
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -119,7 +133,10 @@ class FeePaymentController extends Controller
         ]);
 
         $this->feePaymentService
-            ->collectPayment($fee, $validated);
+            ->collectPayment(
+                $fee,
+                $validated
+            );
 
         return redirect()
 

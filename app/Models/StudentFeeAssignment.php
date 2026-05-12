@@ -15,8 +15,6 @@ class StudentFeeAssignment extends Model
 
         'fee_id',
 
-        'fee_structure_id',
-
         'user_id',
 
         'academic_year_id',
@@ -55,7 +53,7 @@ class StudentFeeAssignment extends Model
 
     /*
     |--------------------------------------------------------------------------
-    | Relationships
+    | Student
     |--------------------------------------------------------------------------
     */
 
@@ -67,19 +65,63 @@ class StudentFeeAssignment extends Model
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Student Profile
+    |--------------------------------------------------------------------------
+    */
+
+    public function studentProfile()
+    {
+        return $this->hasOneThrough(
+            Userprofile::class,
+            User::class,
+            'id',
+            'user_id',
+            'user_id',
+            'id'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Fee Structure
+    |--------------------------------------------------------------------------
+    */
+
     public function feeStructure()
     {
         return $this->belongsTo(
             FeeStructure::class,
-            'fee_structure_id'
+            'fee_id'
         );
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Standard Link
+    |--------------------------------------------------------------------------
+    */
 
     public function standardLink()
     {
         return $this->belongsTo(
             StandardLink::class,
             'standard_link_id'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Fee Invoice
+    |--------------------------------------------------------------------------
+    */
+
+    public function fee()
+    {
+        return $this->hasOne(
+            Fee::class,
+            'student_fee_assignment_id'
         );
     }
 }
