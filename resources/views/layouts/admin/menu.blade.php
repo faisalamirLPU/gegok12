@@ -14,11 +14,58 @@
         </a>
     </li>
 
-    <li class="py-3 px-3 {{ Request::segment('2') == 'fees' ? 'active' : '' }}">
-        <a href="{{ url('/admin/fees') }}" class="flex items-center">
-            <span class="w-5 h-5 text-center font-bold">Rs</span>
-            <span class="mx-3 whitespace-no-wrap">Fee Management</span>
+    <li class="relative py-3 px-3 {{ Request::segment('2') == 'finance' ? 'active' : '' }}">
+        <a href="{{ route('finance.fee-management.index') }}" class="flex items-center">
+            <span class="w-5 h-5 text-center font-bold">💰</span>
+            <span class="mx-3 whitespace-no-wrap flex items-center justify-between w-10/12">
+                Fee Management
+                @if(Request::segment('2') == 'finance')
+                    <img src="{{ url('images/right-arrow.svg') }}" class="w-2 h-2">
+                @endif
+            </span>
         </a>
+
+        <!-- Finance Submenu -->
+        @if(Request::segment('2') == 'finance')
+            <ul class="list-reset sites-sidebar">
+                <li class="py-3 px-3 {{ Request::segment('3') == 'fee-management' && Request::segment('4') == null ? 'active' : '' }}">
+                    <a href="{{ route('finance.fee-management.index') }}" class="flex items-center">
+                        <span class="text-xs">📊</span>
+                        <span class="mx-3 whitespace-no-wrap">Dashboard</span>
+                    </a>
+                </li>
+                <li class="py-3 px-3 {{ Request::segment('3') == 'fee-management' && Request::segment('4') == 'categories' ? 'active' : '' }}">
+                    <a href="{{ route('finance.fee-management.categories') }}" class="flex items-center">
+                        <span class="text-xs">📋</span>
+                        <span class="mx-3 whitespace-no-wrap">Categories</span>
+                    </a>
+                </li>
+                <li class="py-3 px-3 {{ Request::segment('3') == 'fee-management' && Request::segment('4') == 'structures' ? 'active' : '' }}">
+                    <a href="{{ route('finance.fee-management.structures') }}" class="flex items-center">
+                        <span class="text-xs">📑</span>
+                        <span class="mx-3 whitespace-no-wrap">Structures</span>
+                    </a>
+                </li>
+                <li class="py-3 px-3 {{ Request::segment('3') == 'fee-management' && Request::segment('4') == 'special-fees' ? 'active' : '' }}">
+                    <a href="{{ route('finance.fee-management.special-fees') }}" class="flex items-center">
+                        <span class="text-xs">⚡</span>
+                        <span class="mx-3 whitespace-no-wrap">Special Fees</span>
+                    </a>
+                </li>
+                <li class="py-3 px-3 {{ Request::segment('3') == 'fee-management' && Request::segment('4') == 'payments' ? 'active' : '' }}">
+                    <a href="{{ route('finance.fee-management.payments') }}" class="flex items-center">
+                        <span class="text-xs">💳</span>
+                        <span class="mx-3 whitespace-no-wrap">Payments</span>
+                    </a>
+                </li>
+                <li class="py-3 px-3 {{ Request::segment('3') == 'fee-management' && Request::segment('4') == 'analytics' ? 'active' : '' }}">
+                    <a href="{{ route('finance.fee-management.analytics') }}" class="flex items-center">
+                        <span class="text-xs">📈</span>
+                        <span class="mx-3 whitespace-no-wrap">Analytics</span>
+                    </a>
+                </li>
+            </ul>
+        @endif
     </li>
 
     <li class="py-3 px-3 {{ Request::segment('2') == 'teacher-credentials' ? 'active' : '' }}">

@@ -11,11 +11,17 @@ use Illuminate\Support\Facades\DB;
 
 class FeeAssignmentService
 {
+    public function __construct(
+        protected FeeInvoiceService $feeInvoiceService
+    ) {
+    }
+
     public function assignStructureToStudents(
         FeeStructure $structure
     ): void {
 
         DB::transaction(function () use ($structure) {
+            $structure->loadMissing('items.feeCategory');
 
             /*
             |--------------------------------------------------------------------------
@@ -111,7 +117,7 @@ class FeeAssignmentService
                 |--------------------------------------------------------------------------
                 */
 
-                $assignment = StudentFeeAssignment::updateOrCreate(
+                $assignment = StudentFeeAssignment::firstOrNew(
 
                     [
 
@@ -122,68 +128,34 @@ class FeeAssignmentService
                         'user_id' => $student->user_id,
 
                         'standard_link_id' => $student->standardLink_id,
+
+                        'fee_id' => $structure->id,
                     ],
-
-                    [
-
-                        'assigned_amount' => $totalAmount,
-
-                        'paid_amount' => 0,
-
-                        'balance' => $totalAmount,
-
-                        'assigned_on' => now(),
-
-                        'due_date' => now()->addMonth(),
-
-                        'status' => 0,
-                    ]
                 );
+
+                $assignment->fill([
+                    'assigned_amount' => $totalAmount,
+                    'paid_amount' => $assignment->exists
+                        ? $assignment->paid_amount
+                        : 0,
+                    'balance' => max(
+                        $totalAmount - (float) ($assignment->paid_amount ?? 0),
+                        0
+                    ),
+                    'assigned_on' => $assignment->assigned_on ?: now(),
+                    'due_date' => $assignment->due_date ?: now()->addMonth(),
+                    'status' => (float) ($assignment->paid_amount ?? 0) > 0 ? 1 : 0,
+                ]);
+
+                $assignment->save();
 
                 /*
                 |--------------------------------------------------------------------------
-                | Create Invoice
+                | Create Or Merge Invoice
                 |--------------------------------------------------------------------------
                 */
 
-                $invoice = Fee::updateOrCreate(
-
-                    [
-
-                        'school_id' => $structure->school_id,
-
-                        'academic_year_id' => $structure->academic_year_id,
-
-                        'user_id' => $student->user_id,
-
-                        'student_fee_assignment_id' => $assignment->id,
-                    ],
-
-                    [
-
-                        'student_academic_id' => $student->id,
-
-                        'invoice_no' => 'INV-'
-                            . now()->format('Ymd')
-                            . '-'
-                            . str_pad(
-                                $student->user_id,
-                                4,
-                                '0',
-                                STR_PAD_LEFT
-                            ),
-
-                        'total_amount' => $totalAmount,
-
-                        'paid_amount' => 0,
-
-                        'balance' => $totalAmount,
-
-                        'due_date' => now()->addMonth(),
-
-                        'status' => 0,
-                    ]
-                );
+                $this->feeInvoiceService->generateFromAssignment($assignment);
 
                 /*
                 |--------------------------------------------------------------------------
@@ -191,10 +163,7 @@ class FeeAssignmentService
                 |--------------------------------------------------------------------------
                 */
 
-                $assignment->update([
-
-                    'fee_id' => $structure->id
-                ]);
+                $assignment->update(['fee_id' => $structure->id]);
             }
         });
     }

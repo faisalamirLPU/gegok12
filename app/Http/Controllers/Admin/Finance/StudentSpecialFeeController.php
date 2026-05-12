@@ -9,9 +9,16 @@ use App\Models\User;
 use App\Models\FeeCategory;
 use App\Models\StudentSpecialFee;
 use App\Models\UserProfile;
+use App\Helpers\SiteHelper;
+use App\Services\Finance\FeeInvoiceService;
 
 class StudentSpecialFeeController extends Controller
 {
+    public function __construct(
+        protected FeeInvoiceService $feeInvoiceService
+    ) {
+    }
+
     public function index()
     {
         $fees = StudentSpecialFee::with([
@@ -76,9 +83,9 @@ class StudentSpecialFeeController extends Controller
             'remarks'         => 'nullable'
         ]);
 
-        StudentSpecialFee::create([
+        $specialFee = StudentSpecialFee::create([
             'school_id'        => auth()->user()->school_id,
-            'academic_year_id' => \App\Helpers\SiteHelper::getAcademicYear(
+            'academic_year_id' => SiteHelper::getAcademicYear(
                 auth()->user()->school_id
             )->id,
 
@@ -89,6 +96,8 @@ class StudentSpecialFeeController extends Controller
             'remarks'          => $request->remarks,
             'status'           => 1
         ]);
+
+        $this->feeInvoiceService->appendSpecialFee($specialFee);
 
         return redirect()
             ->route('finance.special-fees.index')

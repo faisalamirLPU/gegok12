@@ -9,36 +9,54 @@ use App\Http\Controllers\Admin\Finance\FeeStructureController;
 use App\Http\Controllers\Admin\Finance\StudentAssignmentController;
 use App\Http\Controllers\Admin\Finance\FeePaymentController;
 use App\Http\Controllers\Admin\Finance\StudentSpecialFeeController;
-
-
-Route::prefix('finance')
-
-    ->name('finance.')
-
-    ->group(function () {
-
-        Route::get(
-            'payments',
-            [FeePaymentController::class, 'index']
-        )->name('payments.index');
-
-        Route::get(
-            'payments/{fee}/create',
-            [FeePaymentController::class, 'create']
-        )->name('payments.create');
-
-        Route::post(
-            'payments/{fee}',
-            [FeePaymentController::class, 'store']
-        )->name('payments.store');
-    });
-
+use App\Http\Controllers\Admin\Finance\FeeManagementController;
 
 
 Route::prefix('finance')
     ->name('finance.')
     ->middleware(['auth'])
     ->group(function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Unified Fee Management Dashboard
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            'fee-management',
+            [FeeManagementController::class, 'index']
+        )->name('fee-management.index');
+
+        Route::get(
+            'fee-management/categories',
+            [FeeManagementController::class, 'categories']
+        )->name('fee-management.categories');
+
+        Route::get(
+            'fee-management/structures',
+            [FeeManagementController::class, 'structures']
+        )->name('fee-management.structures');
+
+        Route::get(
+            'fee-management/special-fees',
+            [FeeManagementController::class, 'specialFees']
+        )->name('fee-management.special-fees');
+
+        Route::get(
+            'fee-management/payments',
+            [FeeManagementController::class, 'payments']
+        )->name('fee-management.payments');
+
+        Route::get(
+            'fee-management/analytics',
+            [FeeManagementController::class, 'analytics']
+        )->name('fee-management.analytics');
+
+        Route::get(
+            'fee-management/export',
+            [FeeManagementController::class, 'export']
+        )->name('fee-management.export');
 
         /*
         |--------------------------------------------------------------------------
@@ -63,20 +81,20 @@ Route::prefix('finance')
         );
 
         /*
-|--------------------------------------------------------------------------
-| Special Fees
-|--------------------------------------------------------------------------
-*/
+        |--------------------------------------------------------------------------
+        | Special Fees
+        |--------------------------------------------------------------------------
+        */
 
-Route::post(
-    'special-fees/get-amount',
-    [StudentSpecialFeeController::class, 'getFeeAmount']
-)->name('special-fees.get-amount');
+        Route::post(
+            'special-fees/get-amount',
+            [StudentSpecialFeeController::class, 'getFeeAmount']
+        )->name('special-fees.get-amount');
 
-Route::resource(
-    'special-fees',
-    StudentSpecialFeeController::class
-);
+        Route::resource(
+            'special-fees',
+            StudentSpecialFeeController::class
+        );
 
         /*
         |--------------------------------------------------------------------------
@@ -93,6 +111,28 @@ Route::resource(
             'student-assignments',
             [StudentAssignmentController::class, 'index']
         )->name('student-assignments.index');
+    });
+
+Route::prefix('finance')
+
+    ->name('finance.')
+
+    ->group(function () {
+
+        Route::get(
+            'payments',
+            [FeePaymentController::class, 'index']
+        )->name('payments.index');
+
+        Route::get(
+            'payments/{fee}/create',
+            [FeePaymentController::class, 'create']
+        )->name('payments.create');
+
+        Route::post(
+            'payments/{fee}',
+            [FeePaymentController::class, 'store']
+        )->name('payments.store');
     });
 
 Route::get('/dashboard', 'DashboardController@index')->name('dashboard');

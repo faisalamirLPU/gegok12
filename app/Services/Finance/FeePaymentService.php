@@ -64,8 +64,10 @@ class FeePaymentService
             $newPaidAmount =
                 $fee->paid_amount + $data['amount'];
 
-            $newBalance =
-                $fee->total_amount - $newPaidAmount;
+            $newBalance = max(
+                (float) $fee->total_amount - (float) $newPaidAmount,
+                0
+            );
 
             /*
             |----------------------------------------------------------------------
@@ -75,22 +77,15 @@ class FeePaymentService
 
             $status = 0;
 
-            /*
-            0 = unpaid
-            1 = partial
-            2 = paid
-            */
+            if ((float) $newPaidAmount > (float) $fee->total_amount) {
 
-            if ($newPaidAmount > 0 && $newBalance > 0) {
-
-                $status = 1;
-            }
-
-            if ($newBalance <= 0) {
+                $status = 3;
+            } elseif ((float) $newPaidAmount >= (float) $fee->total_amount) {
 
                 $status = 2;
+            } elseif ((float) $newPaidAmount > 0) {
 
-                $newBalance = 0;
+                $status = 1;
             }
 
             /*

@@ -49,4 +49,20 @@ class FeeCategory extends Model
     {
         return $query->where('status', true);
     }
+
+    public function feeItems()
+    {
+        return $this->hasMany(
+            FeeItem::class,
+            'fee_category_id'
+        );
+    }
+
+    public function structureItems()
+    {
+        return $this->hasMany(
+            FeeStructureItem::class,
+            'fee_category_id'
+        );
+    }
 }
