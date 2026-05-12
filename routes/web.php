@@ -58,3 +58,7 @@ Route::post( '/{slug}/admission-form/validationPersonalDetail', 'AdmissionContro
 
 
 
+Route::get(
+    '/finance/get-fee-amount',
+    [\App\Http\Controllers\Admin\Finance\StudentSpecialFeeController::class, 'getFeeAmount']
+)->name('finance.special-fees.amount');

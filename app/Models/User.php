@@ -152,6 +152,7 @@ class User extends Authenticatable implements HasMedia
      */
     protected $dates = ['deleted_at' , 'email_verified_at'];
 
+
     public function school()
     {
         return $this->belongsTo('App\Models\School','school_id');

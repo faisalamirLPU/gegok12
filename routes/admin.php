@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\Finance\FeeCategoryController;
 use App\Http\Controllers\Admin\Finance\FeeStructureController;
 use App\Http\Controllers\Admin\Finance\StudentAssignmentController;
 use App\Http\Controllers\Admin\Finance\FeePaymentController;
+use App\Http\Controllers\Admin\Finance\StudentSpecialFeeController;
 
 
 Route::prefix('finance')
@@ -60,6 +61,22 @@ Route::prefix('finance')
             'fee-categories',
             FeeCategoryController::class
         );
+
+        /*
+|--------------------------------------------------------------------------
+| Special Fees
+|--------------------------------------------------------------------------
+*/
+
+Route::post(
+    'special-fees/get-amount',
+    [StudentSpecialFeeController::class, 'getFeeAmount']
+)->name('special-fees.get-amount');
+
+Route::resource(
+    'special-fees',
+    StudentSpecialFeeController::class
+);
 
         /*
         |--------------------------------------------------------------------------
