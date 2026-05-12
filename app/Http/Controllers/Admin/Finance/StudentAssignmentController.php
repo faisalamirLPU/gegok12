@@ -10,12 +10,20 @@ class StudentAssignmentController extends Controller
 {
     public function index()
     {
+        $academicYear = SiteHelper::getAcademicYear(
+            auth()->user()->school_id
+        );
+
         $assignments = StudentFeeAssignment::query()
 
             ->with([
+
                 'student.userprofile',
+
                 'feeStructure',
+
                 'standardLink.standard',
+
                 'standardLink.section',
             ])
 
@@ -26,9 +34,7 @@ class StudentAssignmentController extends Controller
 
             ->where(
                 'academic_year_id',
-                SiteHelper::getAcademicYear(
-                    auth()->user()->school_id
-                )->id
+                $academicYear->id
             )
 
             ->latest()

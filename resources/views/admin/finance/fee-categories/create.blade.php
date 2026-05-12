@@ -4,63 +4,75 @@
 
 @section('content')
 
-<div class="container-fluid">
+<div class="max-w-7xl mx-auto px-4 py-6">
+
+    {{-- Header --}}
+    <div class="mb-8">
+
+        <h1 class="text-3xl font-bold text-gray-800">
+            Create Fee Category
+        </h1>
+
+        <p class="text-gray-600 mt-2">
+            Add a new ERP finance category
+        </p>
+
+    </div>
 
     @include('admin.finance.partials.alerts')
 
-    @include('admin.finance.components.breadcrumb', [
-        'items' => ['Finance', 'Fee Categories', 'Create']
-    ])
+    {{-- Form --}}
+    <form method="POST"
+          action="{{ route('finance.fee-categories.store') }}"
+          class="bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
 
-    @include('admin.finance.components.header', [
-        'title' => 'Create Fee Category',
-        'subtitle' => 'Add a new ERP finance category'
-    ])
+        @csrf
 
-    <div class="card border-0 shadow-sm">
+        <input type="hidden"
+               name="school_id"
+               value="{{ auth()->user()->school_id }}">
 
-        <div class="card-body p-4">
+        <input type="hidden"
+               name="academic_year_id"
+               value="{{ \App\Helpers\SiteHelper::getAcademicYear(auth()->user()->school_id)->id }}">
 
-            <form method="POST"
-                  action="{{ route('finance.fee-categories.store') }}">
 
-                @csrf
+        {{-- Section --}}
+        <div class="border-b border-gray-200 p-6 bg-gray-50">
 
-                <input type="hidden"
-                       name="school_id"
-                       value="{{ auth()->user()->school_id }}">
+            <h2 class="text-xl font-semibold text-gray-800 mb-6">
+                Category Information
+            </h2>
 
-                <input type="hidden"
-                       name="academic_year_id"
-                       value="{{ \App\Helpers\SiteHelper::getAcademicYear(auth()->user()->school_id)->id }}">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 @include('admin.finance.fee-categories.form')
 
-                <div class="border-top pt-4 d-flex gap-2">
-
-                    <button type="submit"
-                            class="btn btn-primary">
-
-                        <i class="fas fa-save me-1"></i>
-
-                        Save Category
-
-                    </button>
-
-                    <a href="{{ route('finance.fee-categories.index') }}"
-                       class="btn btn-light border">
-
-                        Cancel
-
-                    </a>
-
-                </div>
-
-            </form>
+            </div>
 
         </div>
 
-    </div>
+
+        {{-- Footer --}}
+        <div class="bg-gray-50 border-t border-gray-200 p-6 flex items-center gap-4">
+
+            <button type="submit"
+                    class="bg-red-700 hover:bg-red-800 text-white px-6 py-3 rounded-lg font-semibold shadow transition">
+
+                Save Category
+
+            </button>
+
+            <a href="{{ route('finance.fee-categories.index') }}"
+               class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold transition">
+
+                Cancel
+
+            </a>
+
+        </div>
+
+    </form>
 
 </div>
 
