@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use App\Traits\Finance\BelongsToAcademicYear;
@@ -9,11 +10,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class FeeStructure extends Model
 {
-    // use SoftDeletes;
     use SoftDeletes,
-    BelongsToSchool,
-    BelongsToAcademicYear,
+        BelongsToSchool,
+        BelongsToAcademicYear,
         TracksUserActions;
+
+    protected $table = 'fee_structures';
 
     protected $fillable = [
         'school_id',
@@ -24,18 +26,11 @@ class FeeStructure extends Model
         'description',
         'installment_type',
         'due_type',
+        'due_day',
         'status',
         'created_by',
         'updated_by',
     ];
-
-    public function assignments()
-    {
-        return $this->hasMany(
-            StudentFeeAssignment::class,
-            'fee_structure_id'
-        );
-    }
 
     protected $casts = [
         'status' => 'boolean',
@@ -47,19 +42,103 @@ class FeeStructure extends Model
     |--------------------------------------------------------------------------
     */
 
+    /**
+     * Structure Items
+     */
     public function items()
     {
-        return $this->hasMany(FeeStructureItem::class);
+        return $this->hasMany(
+            FeeStructureItem::class,
+            'fee_structure_id'
+        );
     }
 
-    public function class ()
+    /**
+     * Student Assignments
+     */
+    public function assignments()
     {
-        return $this->belongsTo(Standard::class, 'class_id');
+        return $this->hasMany(
+            StudentFeeAssignment::class,
+            'fee_structure_id'
+        );
     }
 
+    /**
+     * Class / Standard
+     */
+    public function standard()
+    {
+        return $this->belongsTo(
+            Standard::class,
+            'class_id'
+        );
+    }
+
+    /**
+     * Alias for backward compatibility
+     */
+    public function class()
+    {
+        return $this->belongsTo(
+            Standard::class,
+            'class_id'
+        );
+    }
+
+    /**
+     * Section
+     */
     public function section()
     {
-        return $this->belongsTo(Section::class);
+        return $this->belongsTo(
+            Section::class,
+            'section_id'
+        );
+    }
+
+    /**
+     * Academic Year
+     */
+    public function academicYear()
+    {
+        return $this->belongsTo(
+            AcademicYear::class,
+            'academic_year_id'
+        );
+    }
+
+    /**
+     * School
+     */
+    public function school()
+    {
+        return $this->belongsTo(
+            School::class,
+            'school_id'
+        );
+    }
+
+    /**
+     * Creator
+     */
+    public function createdBy()
+    {
+        return $this->belongsTo(
+            User::class,
+            'created_by'
+        );
+    }
+
+    /**
+     * Updater
+     */
+    public function updatedBy()
+    {
+        return $this->belongsTo(
+            User::class,
+            'updated_by'
+        );
     }
 
     /*
@@ -80,6 +159,47 @@ class FeeStructure extends Model
 
     public function scopeByAcademicYear($query, $academicYearId)
     {
-        return $query->where('academic_year_id', $academicYearId);
+        return $query->where(
+            'academic_year_id',
+            $academicYearId
+        );
+    }
+
+    public function scopeLatestFirst($query)
+    {
+        return $query->latest();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Accessors
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Full Class Name
+     */
+    public function getClassSectionAttribute()
+    {
+        $class = optional($this->standard)->name;
+        $section = optional($this->section)->name;
+
+        if ($class && $section) {
+            return $class . ' - ' . $section;
+        }
+
+        if ($class) {
+            return $class;
+        }
+
+        return 'Unassigned';
+    }
+
+    /**
+     * Total Structure Amount
+     */
+    public function getTotalAmountAttribute()
+    {
+        return $this->items->sum('amount');
     }
 }

@@ -31,8 +31,8 @@
                     {{-- Card Header --}}
                     <div class="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
                         <div>
-                            <h3 class="font-semibold text-gray-800">{{ optional($structure->standardLink->standard)->name ?? 'Unassigned' }}</h3>
-                            <p class="text-gray-500 text-xs">{{ optional($structure->standardLink->section)->name ?? 'All Sections' }}</p>
+                            <h3 class="font-semibold text-gray-800">CLASS - {{ optional($structure->standard)->name ?? 'Unassigned' }}</h3>
+                            <p class="text-gray-500 text-xs">SECTION - {{ optional($structure->section)->name ?? 'All Sections' }}</p>
                         </div>
                         <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-semibold">
                             {{ ucfirst($structure->installment_type ?? 'Monthly') }}
