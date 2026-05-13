@@ -18,7 +18,10 @@ class StoreFeeStructureRequest extends FormRequest
             'school_id' => ['required'],
             'academic_year_id' => ['required'],
 
-            'class_id' => ['required'],
+            'class_id' => [
+                'nullable',
+                'exists:standards,id',
+            ],
             'section_id' => ['nullable'],
 
             'title' => ['required', 'string'],
@@ -32,5 +35,26 @@ class StoreFeeStructureRequest extends FormRequest
             'items.*.fee_category_id' => ['required'],
             'items.*.amount' => ['required', 'numeric', 'min:0'],
         ];
+    }
+    /*
+    |--------------------------------------------------------------------------
+    | Conditional Validation
+    |--------------------------------------------------------------------------
+    */
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+
+            $isGlobal = $this->has('is_global');
+
+            if (!$isGlobal && empty($this->class_id)) {
+
+                $validator->errors()->add(
+                    'class_id',
+                    'The class id field is required.'
+                );
+            }
+        });
     }
 }

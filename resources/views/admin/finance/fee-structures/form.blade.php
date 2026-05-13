@@ -8,12 +8,9 @@
             <span class="text-red-500">*</span>
         </label>
 
-        <input type="text"
-               name="title"
-               value="{{ old('title', $structure->title ?? '') }}"
-               placeholder="e.g. Class 10 - Academic Year 2026"
-               required
-               class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:border-blue-500 focus:ring-0">
+        <input type="text" name="title" value="{{ old('title', $structure->title ?? '') }}"
+            placeholder="e.g. Class 10 - Academic Year 2026" required
+            class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:border-blue-500 focus:ring-0">
 
         @error('title')
 
@@ -25,17 +22,33 @@
 
     </div>
 
+    {{-- Global fee structure --}}
+
+    <!-- <div>
+        <input type="checkbox" class="form-check-input" name="is_global" value="1">
+
+        <label class="form-check-label">
+            Global Structure (All Classes)
+        </label>
+    </div> -->
+
     {{-- Target Academic Class --}}
     <div>
+        <div>
+            <input type="checkbox" class="form-check-input" name="is_global" value="1">
+
+            <label class="form-check-label">
+                Global Structure (All Classes)
+            </label>
+        </div>
 
         <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
             Target Academic Class
-            <span class="text-red-500">*</span>
+            <span class="text-red-500"></span>
         </label>
 
         <select name="class_id"
-                required
-                class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:border-blue-500 focus:ring-0">
+            class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:border-blue-500 focus:ring-0">
 
             <option value="">
                 Select Target Class
@@ -43,8 +56,7 @@
 
             @foreach ($classes as $class)
 
-                <option value="{{ $class->id }}"
-                    {{ old('class_id', $structure->class_id ?? '') == $class->id ? 'selected' : '' }}>
+                <option value="{{ $class->id }}" {{ old('class_id', $structure->class_id ?? '') == $class->id ? 'selected' : '' }}>
 
                     {{ $class->name }}
 
@@ -72,7 +84,7 @@
         </label>
 
         <select name="section_id"
-                class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:border-blue-500 focus:ring-0">
+            class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:border-blue-500 focus:ring-0">
 
             <option value="">
                 Apply to All Sections
@@ -80,8 +92,7 @@
 
             @foreach ($sections as $section)
 
-                <option value="{{ $section->id }}"
-                    {{ old('section_id', $structure->section_id ?? '') == $section->id ? 'selected' : '' }}>
+                <option value="{{ $section->id }}" {{ old('section_id', $structure->section_id ?? '') == $section->id ? 'selected' : '' }}>
 
                     {{ $section->name }}
 
@@ -101,40 +112,34 @@
             <span class="text-red-500">*</span>
         </label>
 
-        <select name="installment_type"
-                required
-                class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:border-blue-500 focus:ring-0">
+        <select name="installment_type" required
+            class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:border-blue-500 focus:ring-0">
 
-            <option value="monthly"
-                {{ old('installment_type', $structure->installment_type ?? '') == 'monthly' ? 'selected' : '' }}>
+            <option value="monthly" {{ old('installment_type', $structure->installment_type ?? '') == 'monthly' ? 'selected' : '' }}>
 
                 Monthly Billing
 
             </option>
 
-            <option value="quarterly"
-                {{ old('installment_type', $structure->installment_type ?? '') == 'quarterly' ? 'selected' : '' }}>
+            <option value="quarterly" {{ old('installment_type', $structure->installment_type ?? '') == 'quarterly' ? 'selected' : '' }}>
 
                 Quarterly Billing
 
             </option>
 
-            <option value="half_yearly"
-                {{ old('installment_type', $structure->installment_type ?? '') == 'half_yearly' ? 'selected' : '' }}>
+            <option value="half_yearly" {{ old('installment_type', $structure->installment_type ?? '') == 'half_yearly' ? 'selected' : '' }}>
 
                 Half-Yearly Billing
 
             </option>
 
-            <option value="yearly"
-                {{ old('installment_type', $structure->installment_type ?? '') == 'yearly' ? 'selected' : '' }}>
+            <option value="yearly" {{ old('installment_type', $structure->installment_type ?? '') == 'yearly' ? 'selected' : '' }}>
 
                 Yearly Billing
 
             </option>
 
-            <option value="custom"
-                {{ old('installment_type', $structure->installment_type ?? '') == 'custom' ? 'selected' : '' }}>
+            <option value="custom" {{ old('installment_type', $structure->installment_type ?? '') == 'custom' ? 'selected' : '' }}>
 
                 Custom Arrangement
 
@@ -152,26 +157,22 @@
             <span class="text-red-500">*</span>
         </label>
 
-        <select name="due_type"
-                required
-                class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:border-blue-500 focus:ring-0">
+        <select name="due_type" required
+            class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:border-blue-500 focus:ring-0">
 
-            <option value="monthly_cycle"
-                {{ old('due_type', $structure->due_type ?? '') == 'monthly_cycle' ? 'selected' : '' }}>
+            <option value="monthly_cycle" {{ old('due_type', $structure->due_type ?? '') == 'monthly_cycle' ? 'selected' : '' }}>
 
                 Relative to Month Cycle
 
             </option>
 
-            <option value="fixed_date"
-                {{ old('due_type', $structure->due_type ?? '') == 'fixed_date' ? 'selected' : '' }}>
+            <option value="fixed_date" {{ old('due_type', $structure->due_type ?? '') == 'fixed_date' ? 'selected' : '' }}>
 
                 Specific Calendar Date
 
             </option>
 
-            <option value="custom"
-                {{ old('due_type', $structure->due_type ?? '') == 'custom' ? 'selected' : '' }}>
+            <option value="custom" {{ old('due_type', $structure->due_type ?? '') == 'custom' ? 'selected' : '' }}>
 
                 Manual Override
 
@@ -188,13 +189,9 @@
             Standard Due Day
         </label>
 
-        <input type="number"
-               min="1"
-               max="31"
-               name="due_day"
-               value="{{ old('due_day', $structure->due_day ?? '') }}"
-               placeholder="e.g. 10"
-               class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:border-blue-500 focus:ring-0">
+        <input type="number" min="1" max="31" name="due_day" value="{{ old('due_day', $structure->due_day ?? '') }}"
+            placeholder="e.g. 10"
+            class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:border-blue-500 focus:ring-0">
 
         <p class="text-[10px] text-gray-400 mt-1 italic leading-tight">
             Determines the automatic due date for monthly billing cycles.
@@ -210,17 +207,15 @@
         </label>
 
         <select name="status"
-                class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:border-blue-500 focus:ring-0">
+            class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:border-blue-500 focus:ring-0">
 
-            <option value="1"
-                {{ old('status', $structure->status ?? 1) == 1 ? 'selected' : '' }}>
+            <option value="1" {{ old('status', $structure->status ?? 1) == 1 ? 'selected' : '' }}>
 
                 Active - In Use
 
             </option>
 
-            <option value="0"
-                {{ old('status', $structure->status ?? 1) == 0 ? 'selected' : '' }}>
+            <option value="0" {{ old('status', $structure->status ?? 1) == 0 ? 'selected' : '' }}>
 
                 Inactive - Archived
 
@@ -237,11 +232,45 @@
             Structural Details & Remarks
         </label>
 
-        <textarea name="description"
-                  rows="3"
-                  placeholder="Provide additional context for this fee structure..."
-                  class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:border-blue-500 focus:ring-0">{{ old('description', $structure->description ?? '') }}</textarea>
+        <textarea name="description" rows="3" placeholder="Provide additional context for this fee structure..."
+            class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:border-blue-500 focus:ring-0">{{ old('description', $structure->description ?? '') }}</textarea>
 
     </div>
 
 </div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const globalCheckbox = document.querySelector('input[name="is_global"]');
+
+        const classSelect = document.getElementById('class_id');
+
+        function toggleClassRequirement() {
+
+            if (globalCheckbox.checked) {
+
+                classSelect.removeAttribute('required');
+
+                classSelect.value = '';
+
+                classSelect.setAttribute('disabled', true);
+
+                classSelect.classList.add('bg-gray-100', 'cursor-not-allowed');
+
+            } else {
+
+                classSelect.setAttribute('required', 'required');
+
+                classSelect.removeAttribute('disabled');
+
+                classSelect.classList.remove('bg-gray-100', 'cursor-not-allowed');
+            }
+        }
+
+        toggleClassRequirement();
+
+        globalCheckbox.addEventListener('change', toggleClassRequirement);
+    });
+</script>

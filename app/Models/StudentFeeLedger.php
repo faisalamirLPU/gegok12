@@ -29,16 +29,38 @@ class StudentFeeLedger extends Model
         'balance_after' => 'decimal:2',
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | Transaction Types
+    |--------------------------------------------------------------------------
+    */
+
     public const TYPE_CREDIT = 'credit';
+
     public const TYPE_DEBIT = 'debit';
+
     public const TYPE_CARRY_FORWARD = 'carry_forward';
+
     public const TYPE_ADVANCE_APPLIED = 'advance_applied';
-    public const TYPE_ADVANCEReceived = 'advance_received';
+
+    public const TYPE_ADVANCE_RECEIVED = 'advance_received';
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
 
     public function student()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Scopes
+    |--------------------------------------------------------------------------
+    */
 
     public function scopeForStudent($query, int $userId)
     {
@@ -52,28 +74,54 @@ class StudentFeeLedger extends Model
 
     public function scopeCredits($query)
     {
-        return $query->where('transaction_type', self::TYPE_CREDIT);
+        return $query->whereIn('transaction_type', [
+            self::TYPE_CREDIT,
+            self::TYPE_ADVANCE_RECEIVED,
+        ]);
     }
 
     public function scopeDebits($query)
     {
-        return $query->where('transaction_type', self::TYPE_DEBIT);
+        return $query->whereIn('transaction_type', [
+            self::TYPE_DEBIT,
+            self::TYPE_ADVANCE_APPLIED,
+        ]);
     }
 
     public function scopeAdvanceBalance($query)
     {
-        return $query->where('transaction_type', self::TYPE_CREDIT);
+        return $query->whereIn('transaction_type', [
+            self::TYPE_CREDIT,
+            self::TYPE_ADVANCE_RECEIVED,
+        ]);
     }
 
-    public static function getAdvanceBalance(int $schoolId, int $userId): float
-    {
+    /*
+    |--------------------------------------------------------------------------
+    | Advance Balance
+    |--------------------------------------------------------------------------
+    */
+
+    public static function getAdvanceBalance(
+        int $schoolId,
+        int $userId
+    ): float {
+
         $lastEntry = self::where('school_id', $schoolId)
             ->where('user_id', $userId)
-            ->orderByDesc('id')
+            ->latest('id')
             ->first();
 
-        return $lastEntry ? (float) $lastEntry->balance_after : 0;
+        return $lastEntry
+            ? (float) $lastEntry->balance_after
+            : 0;
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Record Ledger Transaction
+    |--------------------------------------------------------------------------
+    */
 
     public static function recordTransaction(
         int $schoolId,
@@ -86,34 +134,61 @@ class StudentFeeLedger extends Model
         ?string $description = null,
         ?string $paymentPeriod = null
     ): self {
-        $currentBalance = self::getAdvanceBalance($schoolId, $userId);
+
+        $currentBalance = self::getAdvanceBalance(
+            $schoolId,
+            $userId
+        );
 
         switch ($type) {
+
             case self::TYPE_CREDIT:
-            case self::TYPE_ADVANCEReceived:
+            case self::TYPE_ADVANCE_RECEIVED:
+
                 $newBalance = $currentBalance + $amount;
+
                 break;
+
             case self::TYPE_DEBIT:
             case self::TYPE_ADVANCE_APPLIED:
-                $newBalance = max(0, $currentBalance - $amount);
+
+                $newBalance = max(
+                    0,
+                    $currentBalance - $amount
+                );
+
                 break;
+
             case self::TYPE_CARRY_FORWARD:
+
                 $newBalance = $amount;
+
                 break;
+
             default:
+
                 $newBalance = $currentBalance;
         }
 
         return self::create([
             'school_id' => $schoolId,
+
             'academic_year_id' => $academicYearId,
+
             'user_id' => $userId,
+
             'transaction_type' => $type,
+
             'amount' => $amount,
+
             'reference_type' => $referenceType,
+
             'reference_id' => $referenceId,
+
             'description' => $description,
+
             'payment_period' => $paymentPeriod,
+
             'balance_after' => $newBalance,
         ]);
     }

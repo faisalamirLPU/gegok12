@@ -140,9 +140,25 @@ class FeeStructureController extends Controller
     public function store(
         StoreFeeStructureRequest $request
     ) {
-        $this->feeStructureService->create(
-            $request->validated()
-        );
+
+        $data = $request->validated();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Global Structure Handling
+        |--------------------------------------------------------------------------
+        */
+
+        $data['is_global'] = $request->has('is_global') ? 1 : 0;
+
+        if ($data['is_global']) {
+
+            $data['class_id'] = null;
+
+            $data['section_id'] = null;
+        }
+
+        $this->feeStructureService->create($data);
 
         return redirect()
 
@@ -245,13 +261,22 @@ class FeeStructureController extends Controller
         StoreFeeStructureRequest $request,
         $id
     ) {
+
         $structure = FeeStructure::findOrFail($id);
+
+        $isGlobal = $request->has('is_global') ? 1 : 0;
 
         $structure->update([
 
-            'class_id' => $request->class_id,
+            'is_global' => $isGlobal,
 
-            'section_id' => $request->section_id,
+            'class_id' => $isGlobal
+                ? null
+                : $request->class_id,
+
+            'section_id' => $isGlobal
+                ? null
+                : $request->section_id,
 
             'title' => $request->title,
 
@@ -292,6 +317,14 @@ class FeeStructureController extends Controller
 
                         'amount' =>
                             $item['amount'],
+
+                        'due_date' =>
+                            $item['due_date'] ?? null,
+
+                        'is_optional' =>
+                            isset($item['is_optional']) ? 1 : 0,
+
+                        'status' => 1,
                     ]);
                 }
             }

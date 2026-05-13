@@ -88,7 +88,7 @@ class MonthlyInvoiceGeneratorService
             ->where('usergroup_id', \App\Models\User::STUDENT_USERGROUP_ID)
             ->whereHas('studentAcademic', function ($q) use ($classId, $academicYearId) {
                 $q->where('standardLink_id', $classId)
-                  ->where('academic_year_id', $academicYearId);
+                    ->where('academic_year_id', $academicYearId);
             })
             ->get();
 
@@ -253,15 +253,18 @@ class MonthlyInvoiceGeneratorService
             ->where('academic_year_id', $invoice->academic_year_id)
             ->where(function ($q) use ($standardId, $sectionId) {
                 $q->where('class_id', $standardId)
-                  ->where(function($sq) use ($sectionId) {
-                      $sq->whereNull('section_id')
-                        ->orWhere('section_id', $sectionId);
-                  });
+                    ->where(function ($sq) use ($sectionId) {
+                        $sq->whereNull('section_id')
+                            ->orWhere('section_id', $sectionId);
+                    });
             })
             ->active()
-            ->with(['items' => function($q) {
-                $q->where('status', 1)->orWhereNull('status'); // Ensure items are active if applicable
-            }, 'items.feeCategory'])
+            ->with([
+                'items' => function ($q) {
+                    $q->where('status', 1)->orWhereNull('status'); // Ensure items are active if applicable
+                },
+                'items.feeCategory'
+            ])
             ->get();
 
         foreach ($structures as $structure) {
@@ -403,7 +406,7 @@ class MonthlyInvoiceGeneratorService
     {
         $prefix = 'INV';
         $period = now()->format('Ym');
-        
+
         // Get the latest sequence for this school and period
         $latest = Fee::where('school_id', $schoolId)
             ->where('invoice_no', 'like', "{$prefix}-{$period}-%")
