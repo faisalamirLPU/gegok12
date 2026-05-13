@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin\Finance;
 use App\Helpers\SiteHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Fee;
+use App\Models\Payment;
 use App\Services\Finance\FeePaymentService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class FeePaymentController extends Controller
@@ -16,6 +18,38 @@ class FeePaymentController extends Controller
         FeePaymentService $feePaymentService
     ) {
         $this->feePaymentService = $feePaymentService;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Download Receipt PDF
+    |--------------------------------------------------------------------------
+    */
+
+    public function receipt($paymentId)
+    {
+        $payment = Payment::with([
+
+            'fee.student.userprofile',
+
+            'fee.studentAcademic.standardLink.standard',
+
+            'fee.studentAcademic.standardLink.section',
+
+        ])->findOrFail($paymentId);
+
+        $school = auth()->user()->school;
+
+        $pdf = Pdf::loadView(
+
+            'admin.finance.receipts.pdf',
+
+            compact('payment', 'school')
+        );
+
+        return $pdf->download(
+            'Receipt-' . $payment->receipt_no . '.pdf'
+        );
     }
 
     /*
@@ -39,6 +73,8 @@ class FeePaymentController extends Controller
                 'studentAcademic.standardLink.standard',
 
                 'studentAcademic.standardLink.section',
+
+                'payments',
             ])
 
             ->where(
@@ -63,23 +99,23 @@ class FeePaymentController extends Controller
                             "%{$search}%"
                         )
 
-                        ->orWhereHas(
-                            'student.userprofile',
-                            function ($student) use ($search) {
+                            ->orWhereHas(
+                                'student.userprofile',
+                                function ($student) use ($search) {
 
-                                $student->where(
-                                    'firstname',
-                                    'like',
-                                    "%{$search}%"
-                                )
+                                    $student->where(
+                                        'firstname',
+                                        'like',
+                                        "%{$search}%"
+                                    )
 
-                                ->orWhere(
-                                    'lastname',
-                                    'like',
-                                    "%{$search}%"
-                                );
-                            }
-                        );
+                                        ->orWhere(
+                                            'lastname',
+                                            'like',
+                                            "%{$search}%"
+                                        );
+                                }
+                            );
                     });
                 }
             )
@@ -112,49 +148,102 @@ class FeePaymentController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | Store Payment (Alternative for fee-records modal)
+    | Store Payment (Modal Support)
     |--------------------------------------------------------------------------
     */
 
     public function storePayment(Request $request)
     {
         $validated = $request->validate([
+
             'fee_id' => 'required|exists:fees,id',
+
             'amount' => 'required|numeric|min:1',
+
             'payment_method' => 'required|string',
+
             'transaction_id' => 'nullable|string',
+
             'remarks' => 'nullable|string',
+
             'payment_date' => 'nullable|date',
         ]);
 
-        $fee = Fee::findOrFail($validated['fee_id']);
+        $fee = Fee::findOrFail(
+            $validated['fee_id']
+        );
 
-        $payment = $this->feePaymentService->collectPayment($fee, $validated);
+        $payment =
+            $this->feePaymentService
+                ->collectPayment(
+                    $fee,
+                    $validated
+                );
 
         return redirect()
-            ->back()
-            ->with('success', "Payment of Rs. {$payment->amount} recorded successfully. Receipt: {$payment->receipt_no}");
+
+            ->route(
+                'finance.payments.create',
+                $fee->id
+            )
+
+            ->with([
+
+                'success' =>
+                    "Payment of Rs. {$payment->amount} recorded successfully.",
+
+                'receipt_id' =>
+                    $payment->id,
+            ]);
     }
 
-    /**
-     * Alias for storePayment to match route expectations
-     */
-    public function store(Request $request, Fee $fee)
-    {
+    /*
+    |--------------------------------------------------------------------------
+    | Standard Store
+    |--------------------------------------------------------------------------
+    */
+
+    public function store(
+        Request $request,
+        Fee $fee
+    ) {
+
         $validated = $request->validate([
+
             'amount' => 'required|numeric|min:1',
+
             'payment_method' => 'required|string',
+
             'transaction_id' => 'nullable|string',
+
             'remarks' => 'nullable|string',
+
             'payment_date' => 'nullable|date',
         ]);
 
         $validated['fee_id'] = $fee->id;
 
-        $payment = $this->feePaymentService->collectPayment($fee, $validated);
+        $payment =
+            $this->feePaymentService
+                ->collectPayment(
+                    $fee,
+                    $validated
+                );
 
         return redirect()
-            ->back()
-            ->with('success', "Payment of Rs. {$payment->amount} recorded successfully. Receipt: {$payment->receipt_no}");
+
+            ->route(
+                'finance.payments.create',
+                $fee->id
+            )
+
+            ->with([
+
+                'success' =>
+                    "Payment of Rs. {$payment->amount} recorded successfully.",
+
+                'receipt_id' =>
+                    $payment->id,
+            ]);
     }
 }

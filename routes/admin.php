@@ -14,6 +14,12 @@ use App\Http\Controllers\Admin\Finance\FeeAnalyticsController;
 use App\Http\Controllers\Admin\Finance\StudentFeeRecordController;
 
 
+
+Route::get(
+    '/finance/receipt/{payment}',
+    [FeePaymentController::class, 'receipt']
+)->name('finance.receipt');
+
 Route::prefix('finance')
     ->name('finance.')
     ->middleware(['auth'])
@@ -156,43 +162,43 @@ Route::prefix('finance')
         )->name('fee-records.analytics.export');
     });
 
-    /*
-    |--------------------------------------------------------------------------
-    | Payments (Outside finance prefix to fix duplicate route issue)
-    |--------------------------------------------------------------------------
-    */
+/*
+|--------------------------------------------------------------------------
+| Payments (Outside finance prefix to fix duplicate route issue)
+|--------------------------------------------------------------------------
+*/
 
-    Route::get(
-        'finance/payments',
-        [FeePaymentController::class, 'index']
-    )->name('finance.payments.index');
+Route::get(
+    'finance/payments',
+    [FeePaymentController::class, 'index']
+)->name('finance.payments.index');
 
-    Route::get(
-        'finance/payments/{fee}/create',
-        [FeePaymentController::class, 'create']
-    )->name('finance.payments.create');
+Route::get(
+    'finance/payments/{fee}/create',
+    [FeePaymentController::class, 'create']
+)->name('finance.payments.create');
 
-    Route::post(
-        'finance/payments/{fee}',
-        [FeePaymentController::class, 'store']
-    )->name('finance.payments.store');
+Route::post(
+    'finance/payments/{fee}',
+    [FeePaymentController::class, 'store']
+)->name('finance.payments.store');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Student Fee Records Payments
-    |--------------------------------------------------------------------------
-    */
+/*
+|--------------------------------------------------------------------------
+| Student Fee Records Payments
+|--------------------------------------------------------------------------
+*/
 
-    Route::post(
-        'finance/fee-records/payment',
-        [FeePaymentController::class, 'storePayment']
-    )->name('finance.fee-records.payment');
+Route::post(
+    'finance/fee-records/payment',
+    [FeePaymentController::class, 'storePayment']
+)->name('finance.fee-records.payment');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Payments (Legacy Routes)
-    |--------------------------------------------------------------------------
-    */
+/*
+|--------------------------------------------------------------------------
+| Payments (Legacy Routes)
+|--------------------------------------------------------------------------
+*/
 
 Route::get('/dashboard', 'DashboardController@index')->name('dashboard');
 Route::get('/dashboard/event', 'DashboardController@event');
@@ -225,14 +231,14 @@ Route::get('/payments', function () {
 Route::get('/analytics', function () {
     abort_unless((int) \Auth::user()->usergroup_id === \App\Models\User::SITEADMIN_USERGROUP_ID, 404);
     return view('admin.superadmin.analytics', [
-        'schoolCount'              => \App\Models\School::count(),
-        'activeSchoolCount'        => \App\Models\School::where('status', 1)->count(),
-        'studentCount'             => \App\Models\User::where('usergroup_id', \App\Models\User::STUDENT_USERGROUP_ID)->count(),
-        'teacherCount'             => \App\Models\User::where('usergroup_id', \App\Models\User::TEACHER_USERGROUP_ID)->count(),
-        'subscriptionCount'        => \App\Models\Subscription::count(),
-        'activeSubscriptionCount'  => \App\Models\Subscription::where('status', 'approve')->count(),
+        'schoolCount' => \App\Models\School::count(),
+        'activeSchoolCount' => \App\Models\School::where('status', 1)->count(),
+        'studentCount' => \App\Models\User::where('usergroup_id', \App\Models\User::STUDENT_USERGROUP_ID)->count(),
+        'teacherCount' => \App\Models\User::where('usergroup_id', \App\Models\User::TEACHER_USERGROUP_ID)->count(),
+        'subscriptionCount' => \App\Models\Subscription::count(),
+        'activeSubscriptionCount' => \App\Models\Subscription::where('status', 'approve')->count(),
         'expiredSubscriptionCount' => \App\Models\Subscription::where('status', 'expired')->count(),
-        'planCount'                => \App\Models\Plan::count(),
+        'planCount' => \App\Models\Plan::count(),
     ]);
 })->name('superadmin.analytics');
 Route::get('/settings', function () {

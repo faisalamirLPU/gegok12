@@ -12,7 +12,7 @@
         "php": "^8.4",
         "algolia/algoliasearch-client-php": "*",
         "aws/aws-sdk-php-laravel": "dev-master",
-        "barryvdh/laravel-dompdf": "v3.1.1",
+        "barryvdh/laravel-dompdf": "^3.1",
         "filament/tables": "^3.2",
         "guzzlehttp/guzzle": "^7.8",
         "jantinnerezo/livewire-alert": "^3.0-stable",
