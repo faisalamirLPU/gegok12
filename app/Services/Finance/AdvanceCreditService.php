@@ -26,7 +26,7 @@ class AdvanceCreditService
             $schoolId,
             $academicYearId,
             $userId,
-            StudentFeeLedger::TYPE_ADVANCEReceived,
+            StudentFeeLedger::TYPE_ADVANCE_RECEIVED,
             $amount,
             'manual_credit',
             null,
@@ -35,10 +35,11 @@ class AdvanceCreditService
         );
     }
 
-    public function applyAdvanceToFee(Fee $fee, ?float $amount = null): array
+    public function applyAdvanceToInvoice(Fee $invoice, ?float $amount = null): array
     {
-        return DB::transaction(function () use ($fee, $amount) {
-            $availableAdvance = $this->getAdvanceBalance($fee->school_id, $fee->user_id);
+        return DB::transaction(function () use ($invoice, $amount) {
+            
+            $availableAdvance = $this->getAdvanceBalance($invoice->school_id, $invoice->user_id);
 
             if ($availableAdvance <= 0) {
                 return [
@@ -48,7 +49,8 @@ class AdvanceCreditService
                 ];
             }
 
-            $balanceDue = (float) $fee->balance;
+            // Ensure we don't apply more than the balance due
+            $balanceDue = (float) $invoice->balance;
             $amountToApply = $amount ?? min($availableAdvance, $balanceDue);
 
             if ($amountToApply <= 0) {
@@ -61,39 +63,51 @@ class AdvanceCreditService
 
             // Record in ledger as advance applied
             StudentFeeLedger::recordTransaction(
-                $fee->school_id,
-                $fee->academic_year_id,
-                $fee->user_id,
+                $invoice->school_id,
+                $invoice->academic_year_id,
+                $invoice->user_id,
                 StudentFeeLedger::TYPE_ADVANCE_APPLIED,
                 $amountToApply,
                 'fee',
-                $fee->id,
-                "Advance applied to invoice {$fee->invoice_no}",
-                $fee->payment_period
+                $invoice->id,
+                "Auto-applied advance to invoice {$invoice->invoice_no}",
+                $invoice->payment_period
             );
 
-            // Update fee
-            $newPaidAmount = (float) $fee->paid_amount + $amountToApply;
-            $newBalance = max((float) $fee->total_amount - $newPaidAmount, 0);
-
-            $status = Fee::STATUS_PENDING;
-            if ($newPaidAmount > $fee->total_amount) {
-                $status = Fee::STATUS_ADVANCE;
-            } elseif ($newPaidAmount >= $fee->total_amount && $fee->total_amount > 0) {
-                $status = Fee::STATUS_PAID;
-            } elseif ($newPaidAmount > 0) {
-                $status = Fee::STATUS_PARTIAL;
+            // Create a zero-amount payment record to track the application
+            $receiptNo = 'RCPT-' . now()->format('YmdHis') . '-' . random_int(1000, 9999);
+            while (Payment::where('receipt_no', $receiptNo)->exists()) {
+                $receiptNo = 'RCPT-' . now()->format('YmdHis') . '-' . random_int(1000, 9999);
             }
 
-            $fee->update([
+            Payment::create([
+                'school_id' => $invoice->school_id,
+                'academic_year_id' => $invoice->academic_year_id,
+                'fee_id' => $invoice->id,
+                'user_id' => $invoice->user_id,
+                'receipt_no' => $receiptNo,
+                'amount' => 0,
+                'payment_method' => 'advance',
+                'remarks' => "Advance of Rs. {$amountToApply} auto-applied",
+                'payment_date' => now(),
+            ]);
+
+            // Update fee totals
+            $newPaidAmount = (float) $invoice->paid_amount + $amountToApply;
+            $newBalance = max((float) $invoice->total_amount - $newPaidAmount, 0);
+            $advanceAmount = max($newPaidAmount - (float) $invoice->total_amount, 0);
+
+            $invoice->update([
                 'paid_amount' => $newPaidAmount,
                 'balance' => $newBalance,
-                'status' => $status,
+                'advance_amount' => $advanceAmount,
             ]);
+
+            $invoice->recalculateStatus();
 
             return [
                 'applied' => $newPaidAmount,
-                'remaining' => $this->getAdvanceBalance($fee->school_id, $fee->user_id),
+                'remaining' => $this->getAdvanceBalance($invoice->school_id, $invoice->user_id),
                 'advance_used' => $amountToApply,
             ];
         });

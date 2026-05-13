@@ -128,29 +128,6 @@ class FeePaymentService
 
             /*
             |--------------------------------------------------------------------------
-            | ERP Status
-            |--------------------------------------------------------------------------
-            */
-
-            if ($advance > 0) {
-
-                $status = Fee::STATUS_ADVANCE;
-
-            } elseif ($balance <= 0 && $totalAmount > 0) {
-
-                $status = Fee::STATUS_PAID;
-
-            } elseif ($newPaidAmount > 0) {
-
-                $status = Fee::STATUS_PARTIAL;
-
-            } else {
-
-                $status = Fee::STATUS_PENDING;
-            }
-
-            /*
-            |--------------------------------------------------------------------------
             | Update Invoice ONCE ONLY
             |--------------------------------------------------------------------------
             */
@@ -166,9 +143,9 @@ class FeePaymentService
                 'advance_amount' =>
                     $advance,
 
-                'status' =>
-                    $status,
             ]);
+
+            $fee->recalculateStatus();
 
             /*
             |--------------------------------------------------------------------------
@@ -329,11 +306,6 @@ class FeePaymentService
                     0
                 );
 
-            $status =
-                $balance <= 0
-                ? Fee::STATUS_PAID
-                : Fee::STATUS_PARTIAL;
-
             $fee->update([
 
                 'paid_amount' =>
@@ -342,9 +314,9 @@ class FeePaymentService
                 'balance' =>
                     $balance,
 
-                'status' =>
-                    $status,
             ]);
+
+            $fee->recalculateStatus();
 
             return [
 
@@ -443,23 +415,6 @@ class FeePaymentService
                     0
                 );
 
-            if ($advance > 0) {
-
-                $status = Fee::STATUS_ADVANCE;
-
-            } elseif ($balance <= 0) {
-
-                $status = Fee::STATUS_PAID;
-
-            } elseif ($newPaid > 0) {
-
-                $status = Fee::STATUS_PARTIAL;
-
-            } else {
-
-                $status = Fee::STATUS_PENDING;
-            }
-
             $fee->update([
 
                 'paid_amount' =>
@@ -471,9 +426,9 @@ class FeePaymentService
                 'advance_amount' =>
                     $advance,
 
-                'status' =>
-                    $status,
             ]);
+
+            $fee->recalculateStatus();
 
             $payment->update([
 

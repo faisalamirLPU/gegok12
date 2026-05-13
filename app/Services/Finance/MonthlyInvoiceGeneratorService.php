@@ -231,7 +231,7 @@ class MonthlyInvoiceGeneratorService
             }
 
             // AUTOMATION: Automatically apply available advance credits
-            $this->advanceCreditService->applyAdvanceToFee($invoice);
+            $this->advanceCreditService->applyAdvanceToInvoice($invoice);
 
             return $invoice->fresh(['items.category', 'payments']);
         });

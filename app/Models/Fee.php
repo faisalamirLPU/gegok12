@@ -188,27 +188,47 @@ class Fee extends Model
         return $this->update(['is_locked' => false]);
     }
 
+    public function recalculateStatus(): self
+    {
+        $this->refresh();
+
+        $balance = (float) $this->balance;
+        $advanceAmount = (float) $this->advance_amount;
+        $paidAmount = (float) $this->paid_amount;
+        $totalAmount = (float) $this->total_amount;
+
+        $oldStatus = $this->status;
+        $newStatus = self::STATUS_PENDING;
+
+        if ($balance <= 0 && $advanceAmount > 0) {
+            $newStatus = self::STATUS_ADVANCE;
+        } elseif ($balance <= 0 && $totalAmount > 0) {
+            $newStatus = self::STATUS_PAID;
+        } elseif ($paidAmount > 0) {
+            $newStatus = self::STATUS_PARTIAL;
+        }
+
+        $this->update(['status' => $newStatus]);
+
+        \Log::info("ERP Invoice Status Sync: [Inv: {$this->id}] [Old Status: {$oldStatus}] [New Status: {$newStatus}] [Balance: {$balance}] [Paid: {$paidAmount}] [Advance: {$advanceAmount}]");
+
+        return $this;
+    }
+
     public function recalculateTotals(): self
     {
         $total = (float) $this->items()->sum('total');
         $paid = (float) $this->paid_amount;
+        
         $balance = max($total - $paid, 0);
-
-        $status = self::STATUS_PENDING;
-        if ($paid > $total) {
-            $status = self::STATUS_ADVANCE;
-        } elseif ($paid >= $total && $total > 0) {
-            $status = self::STATUS_PAID;
-        } elseif ($paid > 0) {
-            $status = self::STATUS_PARTIAL;
-        }
+        $advance = max($paid - $total, 0);
 
         $this->update([
             'total_amount' => $total,
             'balance' => $balance,
-            'status' => $status,
+            'advance_amount' => $advance,
         ]);
 
-        return $this->fresh();
+        return $this->recalculateStatus();
     }
 }
