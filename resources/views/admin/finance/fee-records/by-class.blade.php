@@ -1,6 +1,12 @@
 @extends('layouts.admin.layout')
 
-@section('title', "Fee Records - {$classLink->standard->name ?? ''} {$classLink->section->name ?? ''}")
+@section(
+    'title',
+    'Fee Records - '
+    . ($classLink->standard->name ?? '')
+    . ' '
+    . ($classLink->section->name ?? '')
+)
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 py-6">

@@ -2,6 +2,10 @@
 
 @section('title', 'Fee Categories')
 
+@php
+use Illuminate\Support\Str;
+@endphp
+
 @section('content')
 <div class="max-w-7xl mx-auto px-4 py-6">
     {{-- Page Header --}}

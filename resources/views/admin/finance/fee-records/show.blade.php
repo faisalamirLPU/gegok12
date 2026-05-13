@@ -1,6 +1,12 @@
 @extends('layouts.admin.layout')
 
-@section('title', "Fee Record - {$student->userprofile->firstname ?? ''} {$student->userprofile->lastname ?? ''}")
+@section(
+    'title',
+    'Fee Record - '
+    . ($student->userprofile->firstname ?? '')
+    . ' '
+    . ($student->userprofile->lastname ?? '')
+)
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 py-6">
@@ -16,10 +22,18 @@
                 <h1 class="text-3xl font-bold text-gray-900">
                     {{ $student->userprofile->firstname ?? '' }} {{ $student->userprofile->lastname ?? '' }}
                 </h1>
+                @php
+                    $studentAcademic = $student->studentAcademic->first();
+                @endphp
+
                 <p class="text-gray-600 mt-1">
-                    {{ $student->studentAcademic->standardLink->standard->name ?? '' }}
-                    {{ $student->studentAcademic->standardLink->section->name ?? '' }}
+
+                    {{ $studentAcademic?->standardLink?->standard?->name ?? '' }}
+
+                    {{ $studentAcademic?->standardLink?->section?->name ?? '' }}
+
                     | {{ $academicYear->name }}
+
                 </p>
             </div>
             <div class="text-right">
