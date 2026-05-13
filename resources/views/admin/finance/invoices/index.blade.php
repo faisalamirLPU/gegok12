@@ -4,47 +4,32 @@
 
 @section('content')
 
-<div class="container-fluid">
+<div class="relative">
 
     @include('admin.finance.components.header', [
         'title' => 'Invoices',
         'subtitle' => 'Manage student invoices'
     ])
 
-    <div class="card border-0 shadow-sm">
+    @include('admin.finance.partials.tabs')
 
-        <div class="card-body">
-
-            <div class="table-responsive">
-
-                <table class="table align-middle">
-
-                    <thead class="table-light">
-
-                        <tr>
-
-                            <th>Invoice No</th>
-                            <th>Student</th>
-                            <th>Total</th>
-                            <th>Status</th>
-                            <th>Due Date</th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                        @include('admin.finance.partials.table-empty')
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
+    <div class="bg-white custom-shadow border overflow-hidden mt-4">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="bg-gray-50 border-b">
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Invoice No</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Student</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-600">Total</th>
+                        <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-600">Status</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Due Date</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @include('admin.finance.partials.table-empty', ['colspan' => 5])
+                </tbody>
+            </table>
         </div>
-
     </div>
 
 </div>

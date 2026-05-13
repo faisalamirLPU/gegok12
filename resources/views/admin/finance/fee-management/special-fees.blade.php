@@ -11,9 +11,11 @@
         </div>
         <div class="flex items-center gap-2">
             <a href="{{ route('finance.special-fees.create') }}"
-               class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                Assign Fee
+               class="no-underline text-white px-4 my-3 mx-1 flex items-center custom-green py-1 justify-center">
+                <span class="mx-1 text-sm font-semibold">Assign Fee</span>
+                <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 409.6 409.6" xml:space="preserve" class="w-3 h-3 fill-current text-white"><g><g><path d="M392.533,187.733H221.867V17.067C221.867,7.641,214.226,0,204.8,0s-17.067,7.641-17.067,17.067v170.667H17.067
+                  C7.641,187.733,0,195.374,0,204.8s7.641,17.067,17.067,17.067h170.667v170.667c0,9.426,7.641,17.067,17.067,17.067
+                  s17.067-7.641,17.067-17.067V221.867h170.667c9.426,0,17.067-7.641,17.067-17.067S401.959,187.733,392.533,187.733z"></path></g></g></svg>
             </a>
         </div>
     </div>
@@ -22,24 +24,24 @@
     @include('admin.finance.partials.tabs')
 
     {{-- Special Fees Table --}}
-    <div class="mt-5 bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div class="mt-5 bg-white custom-shadow border overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead>
-                    <tr class="bg-gray-50 border-b border-gray-200">
-                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Student</th>
-                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide hidden md:table-cell">Category</th>
-                        <th class="px-3 py-2.5 text-right text-xs font-semibold text-gray-600 uppercase tracking-wide">Amount</th>
-                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide hidden sm:table-cell">Due Date</th>
-                        <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide">Status</th>
-                        <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide">Actions</th>
+                    <tr class="bg-gray-50 border-b">
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Student</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide hidden md:table-cell">Category</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wide">Amount</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide hidden sm:table-cell">Due Date</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide">Status</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse ($specialFees as $fee)
-                        <tr class="hover:bg-gray-50/60">
+                        <tr class="hover:bg-gray-50">
                             {{-- Student --}}
-                            <td class="px-3 py-2.5">
+                            <td class="px-4 py-3">
                                 @php
                                     $profile = optional($fee->student)->userprofile;
                                     $studentName = trim(($profile->firstname ?? '') . ' ' . ($profile->lastname ?? '')) ?: ($fee->student->name ?? 'N/A');
@@ -55,19 +57,19 @@
                             </td>
 
                             {{-- Category --}}
-                            <td class="px-3 py-2.5 hidden md:table-cell">
+                            <td class="px-4 py-3 hidden md:table-cell">
                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
                                     {{ $fee->feeCategory->name ?? '—' }}
                                 </span>
                             </td>
 
                             {{-- Amount --}}
-                            <td class="px-3 py-2.5 text-right">
+                            <td class="px-4 py-3 text-right">
                                 <span class="font-semibold text-gray-900">Rs. {{ number_format($fee->amount, 0) }}</span>
                             </td>
 
                             {{-- Due Date --}}
-                            <td class="px-3 py-2.5 hidden sm:table-cell">
+                            <td class="px-4 py-3 hidden sm:table-cell">
                                 @if($fee->due_date)
                                     <div class="text-xs @if($fee->due_date->lt(now()) && $fee->status == 1) text-red-600 font-semibold @else text-gray-600 @endif">
                                         {{ $fee->due_date->format('d M Y') }}
@@ -81,7 +83,7 @@
                             </td>
 
                             {{-- Status --}}
-                            <td class="px-3 py-2.5 text-center">
+                            <td class="px-4 py-3 text-center">
                                 @php
                                     $statusMap = [
                                         1 => ['bg-green-100', 'text-green-700', 'Active'],
@@ -96,7 +98,7 @@
                             </td>
 
                             {{-- Actions --}}
-                            <td class="px-3 py-2.5 text-center">
+                            <td class="px-4 py-3 text-center">
                                 <div class="flex items-center justify-center gap-1">
                                     <a href="{{ route('finance.special-fees.edit', $fee->id) }}"
                                        class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition" title="Edit">
@@ -126,7 +128,7 @@
         </div>
 
         @if($specialFees->hasPages())
-            <div class="px-4 py-3 border-t border-gray-200">
+            <div class="px-4 py-3 border-t">
                 {{ $specialFees->withQueryString()->links() }}
             </div>
         @endif

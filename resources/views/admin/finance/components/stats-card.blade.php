@@ -1,15 +1,8 @@
-<div class="card border-0 shadow-sm">
-
-    <div class="card-body">
-
-        <h6 class="text-muted">
-            {{ $title }}
-        </h6>
-
-        <h3 class="fw-bold mb-0">
-            {{ $value }}
-        </h3>
-
-    </div>
-
+<div class="bg-white custom-shadow p-4 border h-full">
+    <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
+        {{ $title }}
+    </p>
+    <p class="text-xl font-bold text-gray-800">
+        {{ $value }}
+    </p>
 </div>

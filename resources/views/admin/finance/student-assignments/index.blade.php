@@ -4,210 +4,91 @@
 
 @section('content')
 
-<div class="max-w-7xl mx-auto px-4 py-6">
-
+<div class="relative">
     {{-- Header --}}
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-
+    <div class="flex flex-wrap lg:flex-row justify-between my-3">
         <div>
-
-            <h1 class="text-3xl font-bold text-gray-800">
-                Student Fee Assignments
-            </h1>
-
-            <p class="text-gray-500 mt-1">
-                Manage assigned student fee structures
-            </p>
-
+            <h1 class="admin-h1 my-3">Student Fee Assignments</h1>
         </div>
-
-        {{-- Search --}}
-        <form method="GET" class="mt-4 md:mt-0">
-
-            <input
-                type="text"
-                name="search"
-                value="{{ request('search') }}"
-                placeholder="Search student..."
-                class="w-72 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-600 focus:outline-none"
-            >
-
-        </form>
-
+        <div class="flex items-center">
+            <form method="GET" class="relative">
+                <input type="text" name="search" value="{{ request('search') }}"
+                       placeholder="Search student..."
+                       class="rounded border-gray-300 text-sm focus:border-blue-500 focus:ring-0 w-64 pl-8">
+                <svg class="w-4 h-4 text-gray-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </form>
+        </div>
     </div>
 
+    @include('admin.finance.partials.tabs')
+
     {{-- Table --}}
-    <div class="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
-
+    <div class="bg-white custom-shadow border overflow-hidden">
         <div class="overflow-x-auto">
-
-            <table class="min-w-full text-sm">
-
-                <thead class="bg-gray-100 text-gray-700">
-
-                    <tr>
-
-                        <th class="text-left px-6 py-4 font-semibold">
-                            Student
-                        </th>
-
-                        <th class="text-left px-6 py-4 font-semibold">
-                            Class
-                        </th>
-
-                        <th class="text-left px-6 py-4 font-semibold">
-                            Fee Structure
-                        </th>
-
-                        <th class="text-left px-6 py-4 font-semibold">
-                            Assigned
-                        </th>
-
-                        <th class="text-left px-6 py-4 font-semibold">
-                            Paid
-                        </th>
-
-                        <th class="text-left px-6 py-4 font-semibold">
-                            Balance
-                        </th>
-
-                        <th class="text-left px-6 py-4 font-semibold">
-                            Due Date
-                        </th>
-
-                        <th class="text-left px-6 py-4 font-semibold">
-                            Status
-                        </th>
-
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="bg-gray-50 border-b">
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Student</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Class</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Fee Structure</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Assigned</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Paid</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Balance</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Due Date</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Status</th>
                     </tr>
-
                 </thead>
-
-                <tbody class="divide-y divide-gray-200">
-
+                <tbody class="divide-y divide-gray-100">
                     @forelse($assignments as $assignment)
-
                         <tr class="hover:bg-gray-50 transition">
-
-                            {{-- Student --}}
                             <td class="px-6 py-4">
-
-                                <div class="font-semibold text-gray-800">
-
+                                <div class="font-bold text-gray-900 text-xs">
                                     {{ $assignment->student->userprofile->firstname ?? '' }}
                                     {{ $assignment->student->userprofile->lastname ?? '' }}
-
                                 </div>
-
-                                <div class="text-xs text-gray-500 mt-1">
-
-                                    ID:
-                                    {{ $assignment->student->id ?? '-' }}
-
-                                </div>
-
+                                <div class="text-[10px] text-gray-400 mt-0.5">ID: {{ $assignment->student->id ?? '-' }}</div>
                             </td>
-
-                            {{-- Class --}}
-                            <td class="px-6 py-4">
-
+                            <td class="px-6 py-4 text-xs text-gray-600">
                                 {{ $assignment->standardLink->standard->name ?? '-' }}
-
                                 @if($assignment->standardLink->section)
-
-                                    -
-                                    {{ $assignment->standardLink->section->name }}
-
+                                    - {{ $assignment->standardLink->section->name }}
                                 @endif
-
                             </td>
-
-                            {{-- Fee Structure --}}
-                            <td class="px-6 py-4">
-
-                                <span class="font-medium text-gray-700">
-
-                                    {{ $assignment->feeStructure->title ?? '-' }}
-
-                                </span>
-
+                            <td class="px-6 py-4 text-xs font-medium text-gray-700">
+                                {{ $assignment->feeStructure->title ?? '-' }}
                             </td>
-
-                            {{-- Assigned --}}
-                            <td class="px-6 py-4 text-blue-700 font-semibold">
-
-                                ₹{{ number_format($assignment->assigned_amount, 2) }}
-
+                            <td class="px-6 py-4 text-xs font-bold text-blue-700">
+                                ₹{{ number_format($assignment->assigned_amount, 0) }}
                             </td>
-
-                            {{-- Paid --}}
-                            <td class="px-6 py-4 text-green-600 font-semibold">
-
-                                ₹{{ number_format($assignment->paid_amount, 2) }}
-
+                            <td class="px-6 py-4 text-xs font-bold text-green-700">
+                                ₹{{ number_format($assignment->paid_amount, 0) }}
                             </td>
-
-                            {{-- Balance --}}
-                            <td class="px-6 py-4 text-red-600 font-semibold">
-
-                                ₹{{ number_format($assignment->balance, 2) }}
-
+                            <td class="px-6 py-4 text-xs font-bold text-red-600">
+                                ₹{{ number_format($assignment->balance, 0) }}
                             </td>
-
-                            {{-- Due --}}
-                            <td class="px-6 py-4">
-
+                            <td class="px-6 py-4 text-xs text-gray-500">
                                 {{ optional($assignment->due_date)->format('d M Y') }}
-
                             </td>
-
-                            {{-- Status --}}
                             <td class="px-6 py-4">
-
                                 @if($assignment->balance <= 0)
-
-                                    <span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700 font-semibold">
-                                        Paid
-                                    </span>
-
+                                    <span class="px-2 py-0.5 text-[10px] rounded-full bg-green-100 text-green-700 font-bold uppercase tracking-wider">Paid</span>
                                 @elseif($assignment->paid_amount > 0)
-
-                                    <span class="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700 font-semibold">
-                                        Partial
-                                    </span>
-
+                                    <span class="px-2 py-0.5 text-[10px] rounded-full bg-yellow-100 text-yellow-700 font-bold uppercase tracking-wider">Partial</span>
                                 @else
-
-                                    <span class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-700 font-semibold">
-                                        Pending
-                                    </span>
-
+                                    <span class="px-2 py-0.5 text-[10px] rounded-full bg-red-100 text-red-700 font-bold uppercase tracking-wider">Pending</span>
                                 @endif
-
                             </td>
-
                         </tr>
-
                     @empty
-
                         <tr>
-
-                            <td colspan="8" class="text-center py-10 text-gray-500">
-
-                                No student assignments found.
-
-                            </td>
-
+                            <td colspan="8" class="text-center py-12 text-gray-400 text-xs">No student assignments found.</td>
                         </tr>
-
                     @endforelse
-
                 </tbody>
-
             </table>
-
         </div>
-
     </div>
 
     {{-- Pagination --}}

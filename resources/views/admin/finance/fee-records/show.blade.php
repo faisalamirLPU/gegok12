@@ -30,41 +30,51 @@
     @include('admin.finance.partials.tabs')
 
     {{-- Lifetime Summary Cards --}}
-    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-6">
-        <div class="bg-white rounded-lg border border-gray-200 p-4">
-            <p class="text-sm text-gray-500">Total Demand</p>
-            <p class="text-2xl font-bold text-gray-900">Rs. {{ number_format($lifetimeSummary['total_demand'], 0) }}</p>
+    <div class="flex flex-wrap -mx-1 mt-4">
+        <div class="w-full lg:w-1/5 md:w-1/2 px-1 my-2">
+            <div class="bg-white custom-shadow p-4 border h-full">
+                <p class="text-xs font-medium text-gray-500">Total Demand</p>
+                <p class="text-xl font-bold text-gray-800">Rs. {{ number_format($lifetimeSummary['total_demand'], 0) }}</p>
+            </div>
         </div>
-        <div class="bg-green-50 rounded-lg border border-green-200 p-4">
-            <p class="text-sm text-green-600">Total Paid</p>
-            <p class="text-2xl font-bold text-green-700">Rs. {{ number_format($lifetimeSummary['total_paid'], 0) }}</p>
+        <div class="w-full lg:w-1/5 md:w-1/2 px-1 my-2">
+            <div class="bg-white custom-shadow p-4 border border-green-100 h-full">
+                <p class="text-xs font-medium text-green-600">Total Paid</p>
+                <p class="text-xl font-bold text-green-700">Rs. {{ number_format($lifetimeSummary['total_paid'], 0) }}</p>
+            </div>
         </div>
-        <div class="bg-red-50 rounded-lg border border-red-200 p-4">
-            <p class="text-sm text-red-600">Total Pending</p>
-            <p class="text-2xl font-bold text-red-700">Rs. {{ number_format($lifetimeSummary['total_pending'], 0) }}</p>
+        <div class="w-full lg:w-1/5 md:w-1/2 px-1 my-2">
+            <div class="bg-white custom-shadow p-4 border border-red-100 h-full">
+                <p class="text-xs font-medium text-red-600">Total Pending</p>
+                <p class="text-xl font-bold text-red-700">Rs. {{ number_format($lifetimeSummary['total_pending'], 0) }}</p>
+            </div>
         </div>
-        <div class="bg-blue-50 rounded-lg border border-blue-200 p-4">
-            <p class="text-sm text-blue-600">Advance Credit</p>
-            <p class="text-2xl font-bold text-blue-700">Rs. {{ number_format($lifetimeSummary['advance_balance'], 2) }}</p>
+        <div class="w-full lg:w-1/5 md:w-1/2 px-1 my-2">
+            <div class="bg-white custom-shadow p-4 border border-blue-100 h-full">
+                <p class="text-xs font-medium text-blue-600">Advance Credit</p>
+                <p class="text-xl font-bold text-blue-700">Rs. {{ number_format($lifetimeSummary['advance_balance'], 2) }}</p>
+            </div>
         </div>
-        <div class="bg-white rounded-lg border border-gray-200 p-4">
-            <p class="text-sm text-gray-500">Paid Invoices</p>
-            <p class="text-2xl font-bold text-gray-900">{{ $lifetimeSummary['paid_invoices'] }}/{{ $lifetimeSummary['total_invoices'] }}</p>
+        <div class="w-full lg:w-1/5 md:w-1/2 px-1 my-2">
+            <div class="bg-white custom-shadow p-4 border h-full">
+                <p class="text-xs font-medium text-gray-500">Paid Invoices</p>
+                <p class="text-xl font-bold text-gray-800">{{ $lifetimeSummary['paid_invoices'] }}/{{ $lifetimeSummary['total_invoices'] }}</p>
+            </div>
         </div>
     </div>
 
     {{-- Tabs Navigation --}}
-    <div class="border-b border-gray-200 mb-6">
+    <div class="border-b border-gray-200 mb-4 mt-2">
         <nav class="flex gap-6">
-            <button type="button" class="tab-btn pb-3 border-b-2 border-blue-600 text-blue-600 font-medium"
+            <button type="button" class="tab-btn pb-2 border-b-2 border-blue-600 text-blue-600 font-bold text-xs uppercase tracking-wider"
                     data-tab="monthly-fees">
                 Monthly Fees
             </button>
-            <button type="button" class="tab-btn pb-3 border-b-2 border-transparent text-gray-500 hover:text-gray-700"
+            <button type="button" class="tab-btn pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-600 font-bold text-xs uppercase tracking-wider"
                     data-tab="advance-ledger">
                 Advance Ledger
             </button>
-            <button type="button" class="tab-btn pb-3 border-b-2 border-transparent text-gray-500 hover:text-gray-700"
+            <button type="button" class="tab-btn pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-600 font-bold text-xs uppercase tracking-wider"
                     data-tab="payment-history">
                 All Payments
             </button>
@@ -79,27 +89,27 @@
                     $fee = $monthly['fee'];
                     $statusClass = $fee->erp_status_badge_class ?? 'bg-gray-100 text-gray-700 border border-gray-200';
                 @endphp
-                <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div class="bg-white custom-shadow border overflow-hidden">
                     {{-- Month Header --}}
-                    <div class="flex items-center justify-between px-5 py-3 bg-gray-50 border-b border-gray-200">
+                    <div class="flex items-center justify-between px-5 py-3 bg-gray-50 border-b">
                         <div class="flex items-center gap-3">
-                            <h3 class="text-lg font-semibold text-gray-900">{{ $monthly['month_name'] }}</h3>
+                            <h3 class="text-base font-bold text-gray-800 uppercase tracking-tight">{{ $monthly['month_name'] }}</h3>
                             @if($fee && $fee->invoice_no)
-                                <span class="font-mono text-sm text-blue-700">{{ $fee->invoice_no }}</span>
+                                <span class="font-mono text-xs text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">{{ $fee->invoice_no }}</span>
                             @endif
                         </div>
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-4">
                             @if($fee)
-                                <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $statusClass }}">
+                                <span class="inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold {{ $statusClass }}">
                                     {{ $fee->erp_status }}
                                 </span>
                                 @if($fee->is_locked)
-                                    <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium bg-gray-200 text-gray-600">
+                                    <span class="inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium bg-gray-200 text-gray-600">
                                         Locked
                                     </span>
                                 @endif
                             @endif
-                            <span class="text-sm text-gray-500">Due: {{ $fee ? optional($fee->due_date)->format('d M Y') : '-' }}</span>
+                            <span class="text-[10px] text-gray-400 font-medium uppercase">Due: {{ $fee ? optional($fee->due_date)->format('d M Y') : '-' }}</span>
                         </div>
                     </div>
 
@@ -109,17 +119,17 @@
                             {{-- Fee Items --}}
                             @if($fee->items->count() > 0)
                                 <div class="mb-4">
-                                    <h4 class="text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">Fee Breakdown</h4>
+                                    <h4 class="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">Fee Breakdown</h4>
                                     <div class="space-y-2">
                                         @foreach($fee->items as $item)
-                                            <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                                            <div class="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
                                                 <div>
-                                                    <span class="font-medium text-gray-900">{{ $item->category->name ?? 'Uncategorized' }}</span>
+                                                    <span class="text-xs font-semibold text-gray-700">{{ $item->category->name ?? 'Uncategorized' }}</span>
                                                     @if((float) $item->fine_amount > 0)
-                                                        <span class="text-xs text-orange-600 ml-2">+ Fine: Rs. {{ number_format($item->fine_amount, 2) }}</span>
+                                                        <span class="text-[10px] text-red-500 ml-2 font-medium">+ Fine: Rs. {{ number_format($item->fine_amount, 0) }}</span>
                                                     @endif
                                                 </div>
-                                                <span class="font-semibold text-gray-900">Rs. {{ number_format($item->total, 2) }}</span>
+                                                <span class="text-xs font-bold text-gray-800">Rs. {{ number_format($item->total, 0) }}</span>
                                             </div>
                                         @endforeach
                                     </div>
@@ -127,75 +137,75 @@
                             @endif
 
                             {{-- Summary --}}
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 py-3 bg-gray-50 rounded-lg px-4 mb-4">
-                                <div>
-                                    <p class="text-xs text-gray-500">Total</p>
-                                    <p class="text-lg font-bold text-gray-900">Rs. {{ number_format($fee->total_amount, 2) }}</p>
+                            <div class="flex flex-wrap -mx-1 py-3 bg-gray-50/50 rounded border px-4 mb-4">
+                                <div class="w-1/4 px-1">
+                                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Total</p>
+                                    <p class="text-sm font-bold text-gray-800">Rs. {{ number_format($fee->total_amount, 0) }}</p>
                                 </div>
-                                <div class="text-green-700">
-                                    <p class="text-xs text-green-600">Paid</p>
-                                    <p class="text-lg font-bold">Rs. {{ number_format($fee->paid_amount, 2) }}</p>
+                                <div class="w-1/4 px-1">
+                                    <p class="text-[10px] text-green-500 font-bold uppercase tracking-tighter">Paid</p>
+                                    <p class="text-sm font-bold text-green-700">Rs. {{ number_format($fee->paid_amount, 0) }}</p>
                                 </div>
-                                <div class="text-red-600">
-                                    <p class="text-xs text-red-500">Balance</p>
-                                    <p class="text-lg font-bold">Rs. {{ number_format($fee->balance_amount, 2) }}</p>
+                                <div class="w-1/4 px-1">
+                                    <p class="text-[10px] text-red-400 font-bold uppercase tracking-tighter">Balance</p>
+                                    <p class="text-sm font-bold text-red-600">Rs. {{ number_format($fee->balance_amount, 0) }}</p>
                                 </div>
-                                <div class="text-blue-700">
-                                    <p class="text-xs text-blue-500">Advance</p>
-                                    <p class="text-lg font-bold">Rs. {{ number_format($fee->advance_amount, 2) }}</p>
+                                <div class="w-1/4 px-1">
+                                    <p class="text-[10px] text-blue-400 font-bold uppercase tracking-tighter">Advance</p>
+                                    <p class="text-sm font-bold text-blue-700">Rs. {{ number_format($fee->advance_amount, 0) }}</p>
                                 </div>
                             </div>
 
                             {{-- Actions --}}
-                            <div class="flex items-center gap-3">
+                            <div class="flex flex-wrap items-center gap-2">
                                 <button type="button"
                                         onclick="openPaymentModal({{ $fee->id }}, '{{ $student->userprofile->firstname ?? '' }}', {{ $fee->balance_amount }})"
-                                        class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium text-sm"
+                                        class="no-underline text-white px-4 flex items-center custom-green py-1.5 justify-center @if($fee->balance_amount <= 0) opacity-50 cursor-not-allowed @endif"
                                         @if($fee->balance_amount <= 0) disabled @endif>
-                                    Record Payment
+                                    <span class="text-xs font-bold uppercase tracking-wider">Record Payment</span>
                                 </button>
 
                                 @if($advanceBalance > 0 && $fee->balance_amount > 0)
                                     <form action="{{ route('finance.fee-records.apply-advance', $fee->id) }}" method="POST" class="inline">
                                         @csrf
                                         <input type="hidden" name="amount" value="{{ min($advanceBalance, $fee->balance_amount) }}">
-                                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium text-sm">
-                                            Apply Advance (Rs. {{ number_format(min($advanceBalance, $fee->balance_amount), 2) }})
+                                        <button type="submit" class="no-underline text-white px-4 flex items-center bg-blue-600 rounded py-1.5 justify-center hover:bg-blue-700 transition">
+                                            <span class="text-xs font-bold uppercase tracking-wider">Apply Advance (Rs. {{ number_format(min($advanceBalance, $fee->balance_amount), 0) }})</span>
                                         </button>
                                     </form>
                                 @endif
 
                                 <form action="{{ route('finance.fee-records.toggle-lock', $fee->id) }}" method="POST" class="inline">
                                     @csrf
-                                    <button type="submit" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 font-medium text-sm">
-                                        {{ $fee->is_locked ? 'Unlock' : 'Lock' }} Invoice
+                                    <button type="submit" class="no-underline text-gray-700 px-4 flex items-center bg-gray-100 border rounded py-1.5 justify-center hover:bg-gray-200 transition">
+                                        <span class="text-xs font-bold uppercase tracking-wider">{{ $fee->is_locked ? 'Unlock' : 'Lock' }} Invoice</span>
                                     </button>
                                 </form>
 
                                 @if($fee->payments->count() > 0)
                                     <button type="button"
                                             onclick="showPaymentHistory({{ $fee->id }})"
-                                            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 font-medium text-sm">
-                                        View Receipts ({{ $fee->payments->count() }})
+                                            class="no-underline text-blue-600 px-4 flex items-center bg-blue-50 border border-blue-100 rounded py-1.5 justify-center hover:bg-blue-100 transition">
+                                        <span class="text-xs font-bold uppercase tracking-wider">Receipts ({{ $fee->payments->count() }})</span>
                                     </button>
                                 @endif
                             </div>
                         </div>
                     @else
-                        <div class="p-5 text-center text-gray-500">
-                            <p>No invoice generated for this month.</p>
-                            <button type="button" class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium text-sm">
-                                Generate Invoice
+                        <div class="p-10 text-center">
+                            <p class="text-sm text-gray-400 mb-3">No invoice generated for this month.</p>
+                            <button type="button" class="no-underline text-white px-6 flex items-center custom-green py-1.5 justify-center mx-auto">
+                                <span class="text-xs font-bold uppercase tracking-wider">Generate Invoice</span>
                             </button>
                         </div>
                     @endif
                 </div>
             @empty
-                <div class="bg-white rounded-lg border border-gray-200 p-12 text-center text-gray-500">
-                    <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="bg-white custom-shadow border p-12 text-center text-gray-400">
+                    <svg class="w-12 h-12 mx-auto text-gray-200 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    <p>No fee records found for this student.</p>
+                    <p class="text-sm">No fee records found for this student.</p>
                 </div>
             @endforelse
         </div>
@@ -203,88 +213,92 @@
 
     {{-- Advance Ledger Tab --}}
     <div id="tab-advance-ledger" class="tab-content hidden">
-        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <div class="px-5 py-3 bg-gray-50 border-b border-gray-200">
+        <div class="bg-white custom-shadow border overflow-hidden">
+            <div class="px-5 py-3 bg-gray-50 border-b">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-semibold text-gray-900">Advance Credit Ledger</h3>
+                    <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider">Advance Credit Ledger</h3>
                     <div class="text-right">
-                        <p class="text-sm text-gray-500">Current Balance</p>
-                        <p class="text-xl font-bold text-blue-600">Rs. {{ number_format($advanceBalance, 2) }}</p>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase">Current Balance</p>
+                        <p class="text-xl font-bold text-blue-600">Rs. {{ number_format($advanceBalance, 0) }}</p>
                     </div>
                 </div>
             </div>
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Date</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Type</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Description</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-gray-600">Amount</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-gray-600">Balance After</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    @forelse($advanceLedger as $entry)
-                        <tr>
-                            <td class="px-4 py-3 text-sm text-gray-700">{{ $entry->created_at->format('d M Y') }}</td>
-                            <td class="px-4 py-3 text-sm">
-                                <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium
-                                    {{ $entry->transaction_type === 'credit' || $entry->transaction_type === 'advance_received' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                    {{ ucfirst(str_replace('_', ' ', $entry->transaction_type)) }}
-                                </span>
-                            </td>
-                            <td class="px-4 py-3 text-sm text-gray-700">{{ $entry->description ?? '-' }}</td>
-                            <td class="px-4 py-3 text-sm font-semibold text-right {{ $entry->amount >= 0 ? 'text-green-700' : 'text-red-600' }}">
-                                {{ $entry->amount >= 0 ? '+' : '' }}Rs. {{ number_format($entry->amount, 2) }}
-                            </td>
-                            <td class="px-4 py-3 text-sm font-semibold text-right text-gray-900">
-                                Rs. {{ number_format($entry->balance_after, 2) }}
-                            </td>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-gray-50 border-b">
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Date</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Type</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Description</th>
+                            <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-gray-600">Amount</th>
+                            <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-gray-600">Balance</th>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="px-4 py-8 text-center text-gray-500">No ledger entries found.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @forelse($advanceLedger as $entry)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 text-xs text-gray-600">{{ $entry->created_at->format('d M Y') }}</td>
+                                <td class="px-4 py-3 text-xs">
+                                    <span class="inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold uppercase
+                                        {{ $entry->transaction_type === 'credit' || $entry->transaction_type === 'advance_received' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                        {{ ucfirst(str_replace('_', ' ', $entry->transaction_type)) }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-xs text-gray-600">{{ $entry->description ?? '-' }}</td>
+                                <td class="px-4 py-3 text-xs font-bold text-right {{ $entry->amount >= 0 ? 'text-green-700' : 'text-red-600' }}">
+                                    {{ $entry->amount >= 0 ? '+' : '' }}Rs. {{ number_format($entry->amount, 0) }}
+                                </td>
+                                <td class="px-4 py-3 text-xs font-bold text-right text-gray-800">
+                                    Rs. {{ number_format($entry->balance_after, 0) }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="px-4 py-8 text-center text-gray-400 text-xs">No ledger entries found.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     {{-- All Payments Tab --}}
     <div id="tab-payment-history" class="tab-content hidden">
-        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Receipt No</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Date</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Month</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Method</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-gray-600">Amount</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Remarks</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    @php
-                        $allPayments = $monthlyFees->pluck('fee.payments')->filter()->flatten();
-                    @endphp
-                    @forelse($allPayments as $payment)
-                        <tr>
-                            <td class="px-4 py-3 font-mono text-sm text-blue-700">{{ $payment->receipt_no }}</td>
-                            <td class="px-4 py-3 text-sm text-gray-700">{{ optional($payment->payment_date)->format('d M Y') }}</td>
-                            <td class="px-4 py-3 text-sm text-gray-700">{{ $payment->fee->display_period ?? '-' }}</td>
-                            <td class="px-4 py-3 text-sm text-gray-700">{{ ucfirst($payment->payment_method) }}</td>
-                            <td class="px-4 py-3 text-sm font-semibold text-right text-green-700">Rs. {{ number_format($payment->amount, 2) }}</td>
-                            <td class="px-4 py-3 text-sm text-gray-700">{{ $payment->remarks ?? '-' }}</td>
+        <div class="bg-white custom-shadow border overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-gray-50 border-b">
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Receipt No</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Date</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Month</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Method</th>
+                            <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-gray-600">Amount</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Remarks</th>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="px-4 py-8 text-center text-gray-500">No payment records found.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @php
+                            $allPayments = $monthlyFees->pluck('fee.payments')->filter()->flatten();
+                        @endphp
+                        @forelse($allPayments as $payment)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 font-mono text-xs text-blue-700 font-bold">{{ $payment->receipt_no }}</td>
+                                <td class="px-4 py-3 text-xs text-gray-600">{{ optional($payment->payment_date)->format('d M Y') }}</td>
+                                <td class="px-4 py-3 text-xs text-gray-600 uppercase">{{ $payment->fee->display_period ?? '-' }}</td>
+                                <td class="px-4 py-3 text-xs text-gray-600">{{ ucfirst($payment->payment_method) }}</td>
+                                <td class="px-4 py-3 text-xs font-bold text-right text-green-700">Rs. {{ number_format($payment->amount, 0) }}</td>
+                                <td class="px-4 py-3 text-xs text-gray-400 italic">{{ $payment->remarks ?? '-' }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="px-4 py-8 text-center text-gray-400 text-xs">No payment records found.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
