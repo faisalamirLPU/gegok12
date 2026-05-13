@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 class FeeAssignmentService
 {
     public function __construct(
-        protected FeeInvoiceService $feeInvoiceService
+        protected MonthlyInvoiceGeneratorService $invoiceGenerator
     ) {
     }
 
@@ -151,19 +151,15 @@ class FeeAssignmentService
 
                 /*
                 |--------------------------------------------------------------------------
-                | Create Or Merge Invoice
+                | ERP Finance Automation: Generate Or Merge Monthly Invoice
                 |--------------------------------------------------------------------------
                 */
-
-                $this->feeInvoiceService->generateFromAssignment($assignment);
-
-                /*
-                |--------------------------------------------------------------------------
-                | Link Fee Structure
-                |--------------------------------------------------------------------------
-                */
-
-                $assignment->update(['fee_id' => $structure->id]);
+                $this->invoiceGenerator->generateMonthlyInvoice(
+                    (int) $structure->school_id,
+                    (int) $structure->academic_year_id,
+                    (int) $student->user_id,
+                    now()
+                );
             }
         });
     }

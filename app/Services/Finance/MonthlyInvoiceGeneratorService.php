@@ -38,9 +38,10 @@ class MonthlyInvoiceGeneratorService
             $year = (int) $forMonth->format('Y');
 
             // Check if invoice already exists for this period
-            $existingInvoice = Fee::where('school_id', $schoolId)
-                ->where('academic_year_id', $academicYearId)
-                ->where('user_id', $userId)
+            // Standardized Duplicate Prevention: Only check school, year, user, and period
+            $existingInvoice = Fee::where('school_id', (int) $schoolId)
+                ->where('academic_year_id', (int) $academicYearId)
+                ->where('user_id', (int) $userId)
                 ->where('payment_period', $paymentPeriod)
                 ->first();
 
@@ -130,40 +131,48 @@ class MonthlyInvoiceGeneratorService
         int $academicYearId,
         Carbon $forMonth
     ): array {
-        $students = \App\Models\User::where('school_id', $schoolId)
-            ->where('usergroup_id', \App\Models\User::STUDENT_USERGROUP_ID)
-            ->where('status', 1)
-            ->whereHas('studentAcademic', function ($q) use ($academicYearId) {
-                $q->where('academic_year_id', $academicYearId);
-            })
-            ->get();
-
         $results = [
             'generated' => 0,
             'skipped' => 0,
             'errors' => [],
         ];
 
-        foreach ($students as $student) {
-            try {
-                $invoice = $this->generateMonthlyInvoice(
-                    $schoolId,
-                    $academicYearId,
-                    $student->id,
-                    $forMonth
-                );
+        \App\Models\User::where('school_id', $schoolId)
+            ->where('usergroup_id', \App\Models\User::STUDENT_USERGROUP_ID)
+            ->where('status', 1)
+            ->whereHas('studentAcademic', function ($q) use ($academicYearId) {
+                $q->where('academic_year_id', $academicYearId);
+            })
+            ->chunk(100, function ($students) use (&$results, $schoolId, $academicYearId, $forMonth) {
+                foreach ($students as $student) {
+                    try {
+                        $invoice = $this->generateMonthlyInvoice(
+                            (int) $schoolId,
+                            (int) $academicYearId,
+                            (int) $student->id,
+                            $forMonth
+                        );
 
-                if ($invoice) {
-                    $results['generated']++;
+                        if ($invoice) {
+                            $results['generated']++;
+                        } else {
+                            $results['skipped']++;
+                            $results['errors'][] = [
+                                'student_id' => $student->id,
+                                'reason' => 'Empty invoice or no applicable fees',
+                            ];
+                        }
+                    } catch (\Exception $e) {
+                        $results['errors'][] = [
+                            'student_id' => $student->id,
+                            'error' => $e->getMessage(),
+                            'trace' => substr($e->getTraceAsString(), 0, 200),
+                        ];
+                        $results['skipped']++;
+                        \Log::error("ERP Invoice Skip [Student: {$student->id}]: " . $e->getMessage());
+                    }
                 }
-            } catch (\Exception $e) {
-                $results['errors'][] = [
-                    'student_id' => $student->id,
-                    'error' => $e->getMessage(),
-                ];
-                $results['skipped']++;
-            }
-        }
+            });
 
         return $results;
     }
@@ -179,60 +188,80 @@ class MonthlyInvoiceGeneratorService
         string $paymentPeriod,
         int $month,
         int $year
-    ): Fee {
-        $dueDate = Carbon::createFromDate($year, $month, 1)->addDays(10)->endOfMonth();
-        $invoiceNo = $this->generateInvoiceNumber($schoolId);
+    ): ?Fee {
+        // Wrap everything in a sub-transaction to allow rollback if empty
+        return DB::transaction(function () use ($schoolId, $academicYearId, $userId, $studentAcademic, $paymentPeriod, $month, $year) {
+            $dueDate = Carbon::createFromDate($year, $month, 1)->addDays(10)->endOfMonth();
+            $invoiceNo = $this->generateInvoiceNumber($schoolId);
 
-        $invoice = Fee::create([
-            'school_id' => $schoolId,
-            'academic_year_id' => $academicYearId,
-            'student_academic_id' => $studentAcademic?->id,
-            'user_id' => $userId,
-            'invoice_no' => $invoiceNo,
-            'billing_cycle' => $paymentPeriod,
-            'payment_period' => $paymentPeriod,
-            'month' => $month,
-            'year' => $year,
-            'total_amount' => 0,
-            'paid_amount' => 0,
-            'balance' => 0,
-            'due_date' => $dueDate,
-            'generated_on' => now(),
-            'status' => Fee::STATUS_PENDING,
-            'is_locked' => false,
-        ]);
+            $invoice = Fee::create([
+                'school_id' => $schoolId,
+                'academic_year_id' => $academicYearId,
+                'student_academic_id' => $studentAcademic?->id,
+                'user_id' => $userId,
+                'invoice_no' => $invoiceNo,
+                'billing_cycle' => $paymentPeriod,
+                'payment_period' => $paymentPeriod,
+                'month' => $month,
+                'year' => $year,
+                'total_amount' => 0,
+                'paid_amount' => 0,
+                'balance' => 0,
+                'due_date' => $dueDate,
+                'generated_on' => now(),
+                'status' => Fee::STATUS_PENDING,
+                'is_locked' => false,
+            ]);
 
-        // Add structural fees
-        $this->addStructuralFees($invoice, $studentAcademic);
+            // Add structural fees
+            $this->addStructuralFees($invoice, $studentAcademic);
 
-        // Add special fees
-        $this->addSpecialFees($invoice);
+            // Add special fees
+            $this->addSpecialFees($invoice);
 
-        // Refresh totals
-        return $invoice->recalculateTotals();
+            // Recalculate totals
+            $invoice->recalculateTotals();
+
+            // CRITICAL: Prevent generating invoices with 0 amount or no items
+            if ($invoice->total_amount <= 0 || $invoice->items()->count() === 0) {
+                // Rollback this specific creation by throwing an exception or returning null
+                // Returning null is better if handled by the caller
+                DB::rollBack();
+                return null;
+            }
+
+            // AUTOMATION: Automatically apply available advance credits
+            $this->advanceCreditService->applyAdvanceToFee($invoice);
+
+            return $invoice->fresh(['items.category', 'payments']);
+        });
     }
 
-    /**
-     * Add structural fees from fee structures assigned to the student
-     */
     protected function addStructuralFees(Fee $invoice, ?StudentAcademic $studentAcademic): void
     {
-        if (!$studentAcademic) {
+        if (!$studentAcademic || !$studentAcademic->standardLink) {
             return;
         }
 
-        $standardLinkId = $studentAcademic->standardLink_id;
+        // Use standard_id and section_id from the link
+        $standardId = $studentAcademic->standardLink->standard_id;
+        $sectionId = $studentAcademic->standardLink->section_id;
 
-        // Get active fee structures for this class/section
+        // Get active fee structures for this specific class and section
         $structures = FeeStructure::query()
             ->where('school_id', $invoice->school_id)
             ->where('academic_year_id', $invoice->academic_year_id)
-            ->where(function ($q) use ($standardLinkId) {
-                $q->where('class_id', $standardLinkId)
-                  ->orWhereNull('class_id');
+            ->where(function ($q) use ($standardId, $sectionId) {
+                $q->where('class_id', $standardId)
+                  ->where(function($sq) use ($sectionId) {
+                      $sq->whereNull('section_id')
+                        ->orWhere('section_id', $sectionId);
+                  });
             })
             ->active()
-            ->with('items.feeCategory')
+            ->with(['items' => function($q) {
+                $q->where('status', 1)->orWhereNull('status'); // Ensure items are active if applicable
+            }, 'items.feeCategory'])
             ->get();
 
         foreach ($structures as $structure) {
@@ -338,20 +367,32 @@ class MonthlyInvoiceGeneratorService
     }
 
     /**
-     * Generate a unique invoice number
+     * Generate a unique invoice number in standardized format: INV-YYYYMM-XXXX
      */
     protected function generateInvoiceNumber(int $schoolId): string
     {
         $prefix = 'INV';
-        $date = now()->format('Ymd');
-        $random = str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+        $period = now()->format('Ym');
+        
+        // Get the latest sequence for this school and period
+        $latest = Fee::where('school_id', $schoolId)
+            ->where('invoice_no', 'like', "{$prefix}-{$period}-%")
+            ->orderByDesc('invoice_no')
+            ->first();
 
-        $invoiceNo = "{$prefix}-{$date}-{$random}";
+        if ($latest) {
+            $parts = explode('-', $latest->invoice_no);
+            $sequence = (int) end($parts) + 1;
+        } else {
+            $sequence = 1;
+        }
 
-        // Ensure uniqueness
+        $invoiceNo = "{$prefix}-{$period}-" . str_pad((string) $sequence, 4, '0', STR_PAD_LEFT);
+
+        // Safety check for uniqueness
         while (Fee::where('invoice_no', $invoiceNo)->exists()) {
-            $random = str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT);
-            $invoiceNo = "{$prefix}-{$date}-{$random}";
+            $sequence++;
+            $invoiceNo = "{$prefix}-{$period}-" . str_pad((string) $sequence, 4, '0', STR_PAD_LEFT);
         }
 
         return $invoiceNo;

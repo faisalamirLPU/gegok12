@@ -10,12 +10,12 @@ use App\Models\FeeCategory;
 use App\Models\StudentSpecialFee;
 use App\Models\UserProfile;
 use App\Helpers\SiteHelper;
-use App\Services\Finance\FeeInvoiceService;
+use App\Services\Finance\MonthlyInvoiceGeneratorService;
 
 class StudentSpecialFeeController extends Controller
 {
     public function __construct(
-        protected FeeInvoiceService $feeInvoiceService
+        protected \App\Services\Finance\MonthlyInvoiceGeneratorService $invoiceGenerator
     ) {
     }
 
@@ -97,7 +97,13 @@ class StudentSpecialFeeController extends Controller
             'status'           => 1
         ]);
 
-        $this->feeInvoiceService->appendSpecialFee($specialFee);
+        // ERP Finance Automation: Generate Or Update invoice to include special fee
+        $this->invoiceGenerator->generateMonthlyInvoice(
+            (int) $specialFee->school_id,
+            (int) $specialFee->academic_year_id,
+            (int) $specialFee->user_id,
+            $specialFee->due_date ? \Carbon\Carbon::parse($specialFee->due_date) : now()
+        );
 
         return redirect()
             ->route('finance.fee-management.special-fees')

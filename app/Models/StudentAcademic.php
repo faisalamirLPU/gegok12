@@ -7,6 +7,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Services\Finance\MonthlyInvoiceGeneratorService;
 
 /**
  * Class StudentAcademic
@@ -54,6 +55,24 @@ class StudentAcademic extends Model
     //
     use SoftDeletes;
     use HasFactory;
+
+    protected static function booted()
+    {
+        static::created(function ($studentAcademic) {
+            // ERP Finance Automation: Generate invoice for the current month upon class assignment
+            try {
+                $generator = app(MonthlyInvoiceGeneratorService::class);
+                $generator->generateMonthlyInvoice(
+                    $studentAcademic->school_id,
+                    $studentAcademic->academic_year_id,
+                    $studentAcademic->user_id,
+                    now()
+                );
+            } catch (\Exception $e) {
+                \Log::error("Failed to generate initial invoice for student {$studentAcademic->user_id}: " . $e->getMessage());
+            }
+        });
+    }
 
     /**
      * The table associated with the model.

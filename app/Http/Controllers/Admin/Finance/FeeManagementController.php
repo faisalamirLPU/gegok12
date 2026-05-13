@@ -154,6 +154,9 @@ class FeeManagementController extends Controller
             ])
             ->where('school_id', $schoolId)
             ->where('academic_year_id', $academicYear->id)
+            // ERP Filter: Only show valid invoices with items and correct format
+            ->where('total_amount', '>', 0)
+            ->where('invoice_no', 'like', 'INV-20%') 
             ->when(
                 $request->search,
                 function ($query, $search) {

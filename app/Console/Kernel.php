@@ -102,6 +102,12 @@ class Kernel extends ConsoleKernel
         $schedule->command('gego:checkwebnotification')
                  ->everyMinute()
                  ->withoutOverlapping();
+
+        // ERP Finance Automation: Generate monthly invoices on the 1st of every month
+        $schedule->command('finance:generate-invoices')
+                 ->monthlyOn(1, '00:00')
+                 ->withoutOverlapping()
+                 ->runInBackground();
     }
 
     /**
