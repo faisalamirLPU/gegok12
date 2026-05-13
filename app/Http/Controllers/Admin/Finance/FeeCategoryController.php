@@ -52,7 +52,7 @@ class FeeCategoryController extends Controller
         return redirect()
 
             ->route(
-                'finance.fee-categories.index'
+                'finance.fee-management.categories'
             )
 
             ->with(
@@ -82,7 +82,7 @@ class FeeCategoryController extends Controller
         return redirect()
 
             ->route(
-                'finance.fee-categories.index'
+                'finance.fee-management.categories'
             )
 
             ->with(
