@@ -12,8 +12,8 @@
             </div>
             @if($fee->payments()->exists())
 
-                <a href="{{ route('finance.receipt', $fee->payments()->latest()->first()->id) }}"
-                    class="btn btn-sm btn-primary">
+                <a href="{{ route('finance.receipt', $fee->payments()->latest()->first()->id) }}" class="btn btn-sm btn-primary"
+                    target="_blank">
                     Download Latest Receipt
                 </a>
 

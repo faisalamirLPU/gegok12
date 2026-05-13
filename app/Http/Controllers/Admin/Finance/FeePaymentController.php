@@ -47,7 +47,7 @@ class FeePaymentController extends Controller
             compact('payment', 'school')
         );
 
-        return $pdf->download(
+        return $pdf->stream(
             'Receipt-' . $payment->receipt_no . '.pdf'
         );
     }
