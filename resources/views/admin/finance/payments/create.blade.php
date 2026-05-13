@@ -4,187 +4,100 @@
 
 @section('content')
 
-<div class="max-w-7xl mx-auto px-4 py-6">
-
+<div class="relative">
     {{-- Header --}}
-    <div class="mb-8">
-
-        <h1 class="text-3xl font-bold text-gray-800">
-            Collect Payment
-        </h1>
-
-        <p class="text-gray-600 mt-2">
-            Submit invoice payment for student fees
-        </p>
-
+    <div class="flex flex-wrap lg:flex-row justify-between my-3">
+        <div>
+            <h1 class="admin-h1 my-3">Collect Payment</h1>
+        </div>
+        <div class="flex items-center">
+            <a href="{{ route('finance.payments.index') }}" class="no-underline text-gray-600 px-4 flex items-center bg-gray-100 border rounded py-1.5 justify-center hover:bg-gray-200 transition">
+                <span class="text-[10px] font-bold uppercase tracking-wider">Back to Payments</span>
+            </a>
+        </div>
     </div>
 
-
-    {{-- Alerts --}}
-    @include('admin.finance.partials.alerts')
-
+    @include('admin.finance.partials.tabs')
 
     {{-- Form --}}
-    <form method="POST"
-          action="{{ route('finance.payments.store', $fee->id) }}"
-          class="bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
-
+    <form method="POST" action="{{ route('finance.payments.store', $fee->id) }}"
+          class="bg-white custom-shadow border overflow-hidden">
         @csrf
 
-
         {{-- Invoice Information --}}
-        <div class="border-b border-gray-200 p-6 bg-gray-50">
-
-            <h2 class="text-xl font-semibold text-gray-800 mb-6">
-                Invoice Information
-            </h2>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
+        <div class="border-b p-5 bg-gray-50/50">
+            <h2 class="text-sm font-semibold text-gray-800 uppercase tracking-wider mb-4">Invoice Summary</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {{-- Invoice Number --}}
                 <div>
-
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Invoice Number
-                    </label>
-
-                    <div class="w-full border border-gray-300 rounded-lg px-4 py-3 bg-white text-gray-800 font-medium">
-
+                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Invoice Number</label>
+                    <div class="w-full border rounded px-4 py-2 bg-white text-sm font-semibold text-blue-700 font-mono">
                         {{ $fee->invoice_no }}
-
                     </div>
-
                 </div>
-
 
                 {{-- Balance --}}
                 <div>
-
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Remaining Balance
-                    </label>
-
-                    <div class="w-full border border-red-200 rounded-lg px-4 py-3 bg-red-50 text-red-700 font-bold">
-
-                        ₹{{ number_format($fee->balance, 2) }}
-
+                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Outstanding Balance</label>
+                    <div class="w-full border border-red-100 rounded px-4 py-2 bg-red-50 text-red-700 text-sm font-bold">
+                        Rs. {{ number_format($fee->balance, 0) }}
                     </div>
-
                 </div>
-
             </div>
-
         </div>
 
-
         {{-- Payment Information --}}
-        <div class="p-6">
-
-            <h2 class="text-xl font-semibold text-gray-800 mb-6">
-                Payment Information
-            </h2>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
+        <div class="p-5">
+            <h2 class="text-sm font-semibold text-gray-800 uppercase tracking-wider mb-4">Transaction Details</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {{-- Amount --}}
                 <div>
-
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Amount
-                    </label>
-
-                    <input type="number"
-                           step="0.01"
-                           name="amount"
-                           required
-                           placeholder="Enter payment amount"
-                           class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-600 focus:outline-none">
-
+                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Collection Amount <span class="text-red-500">*</span></label>
+                    <input type="number" step="0.01" name="amount" required
+                           placeholder="Enter amount to collect"
+                           class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:border-blue-500 focus:ring-0">
                 </div>
-
 
                 {{-- Payment Method --}}
                 <div>
-
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Payment Method
-                    </label>
-
+                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Payment Method <span class="text-red-500">*</span></label>
                     <select name="payment_method"
-                            class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-600 focus:outline-none">
-
-                        <option value="cash">
-                            Cash
-                        </option>
-
-                        <option value="upi">
-                            UPI
-                        </option>
-
-                        <option value="bank">
-                            Bank
-                        </option>
-
+                            class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:border-blue-500 focus:ring-0">
+                        <option value="cash">Cash Payment</option>
+                        <option value="upi">UPI / Online</option>
+                        <option value="bank">Bank Transfer</option>
+                        <option value="cheque">Cheque</option>
                     </select>
-
                 </div>
-
 
                 {{-- Transaction ID --}}
                 <div class="md:col-span-2">
-
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Transaction ID
-                    </label>
-
-                    <input type="text"
-                           name="transaction_id"
-                           placeholder="Enter transaction reference ID"
-                           class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-600 focus:outline-none">
-
+                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Transaction Reference</label>
+                    <input type="text" name="transaction_id"
+                           placeholder="Enter transaction ID or cheque number"
+                           class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:border-blue-500 focus:ring-0">
                 </div>
-
 
                 {{-- Remarks --}}
                 <div class="md:col-span-2">
-
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Remarks
-                    </label>
-
-                    <textarea name="remarks"
-                              rows="5"
-                              placeholder="Enter payment remarks..."
-                              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-600 focus:outline-none"></textarea>
-
+                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Administrative Remarks</label>
+                    <textarea name="remarks" rows="2"
+                              placeholder="Any additional notes about this payment..."
+                              class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:border-blue-500 focus:ring-0"></textarea>
                 </div>
-
             </div>
-
         </div>
-
 
         {{-- Footer --}}
-        <div class="bg-gray-50 border-t border-gray-200 p-6 flex items-center gap-4">
-
-            <button type="submit"
-                    class="bg-red-700 hover:bg-red-800 text-white px-6 py-3 rounded-lg font-semibold shadow transition">
-
-                Submit Payment
-
+        <div class="bg-gray-50 border-t p-5 flex items-center gap-3">
+            <button type="submit" class="no-underline text-white px-8 flex items-center custom-green py-2 justify-center shadow-sm hover:shadow-md transition">
+                <span class="text-sm font-semibold">Post Payment</span>
             </button>
-
-            <a href="{{ url()->previous() }}"
-               class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold transition">
-
-                Cancel
-
+            <a href="{{ url()->previous() }}" class="no-underline text-gray-700 px-6 flex items-center bg-gray-100 border py-2 justify-center rounded hover:bg-gray-200 transition">
+                <span class="text-sm font-semibold">Cancel</span>
             </a>
-
         </div>
-
     </form>
-
 </div>
 
 @endsection

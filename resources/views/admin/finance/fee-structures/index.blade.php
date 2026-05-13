@@ -5,277 +5,97 @@
 @section('content')
 
 <div class="relative">
-
     {{-- Header --}}
-    <div class="flex flex-row justify-between">
-
+    <div class="flex flex-wrap lg:flex-row justify-between my-3">
         <div>
-
-            <h1 class="admin-h1 my-3">
-                Fee Structures
-            </h1>
-
+            <h1 class="admin-h1 my-3">Fee Structures</h1>
         </div>
-
-        <div class="relative">
-
-            <div class="flex items-center">
-
-                <a href="{{ route('finance.fee-structures.create') }}"
-                   class="no-underline text-white px-4 my-3 mx-1 flex items-center custom-green py-1 justify-center">
-
-                    <span class="mx-1 text-sm font-semibold">
-                        Add Fee Structure
-                    </span>
-
-                    <svg version="1.1"
-                         xmlns="http://www.w3.org/2000/svg"
-                         viewBox="0 0 409.6 409.6"
-                         class="w-3 h-3 fill-current text-white">
-
-                        <g>
-
-                            <path d="M392.533,187.733H221.867V17.067C221.867,7.641,214.226,0,204.8,0
-                            s-17.067,7.641-17.067,17.067v170.667H17.067
-                            C7.641,187.733,0,195.374,0,204.8
-                            s7.641,17.067,17.067,17.067h170.667v170.667
-                            c0,9.426,7.641,17.067,17.067,17.067
-                            s17.067-7.641,17.067-17.067V221.867h170.667
-                            c9.426,0,17.067-7.641,17.067-17.067
-                            S401.959,187.733,392.533,187.733z">
-                            </path>
-
-                        </g>
-
-                    </svg>
-
-                </a>
-
+        <div class="flex items-center gap-2">
+            <div class="relative">
+                <input type="text" id="searchInput" placeholder="Search structures..."
+                       class="rounded border-gray-300 text-sm focus:border-blue-500 focus:ring-0 w-64 pl-8">
+                <svg class="w-4 h-4 text-gray-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
             </div>
-
+            <a href="{{ route('finance.fee-structures.create') }}"
+               class="no-underline text-white px-4 flex items-center custom-green py-1.5 justify-center">
+                <span class="text-[10px] font-bold uppercase tracking-wider">Add Structure</span>
+            </a>
         </div>
-
     </div>
 
-
-    {{-- Search + Filters --}}
-    <div class="flex flex-wrap items-center justify-between mb-4">
-
-        <div class="flex flex-wrap gap-2">
-
-            <button class="border bg-white px-5 py-2 shadow-sm text-gray-700 installment-filter"
-                    data-filter="">
-
-                ALL
-
-            </button>
-
-            <button class="border bg-white px-5 py-2 shadow-sm text-gray-700 installment-filter"
-                    data-filter="monthly">
-
-                MONTHLY
-
-            </button>
-
-            <button class="border bg-white px-5 py-2 shadow-sm text-gray-700 installment-filter"
-                    data-filter="quarterly">
-
-                QUARTERLY
-
-            </button>
-
-            <button class="border bg-white px-5 py-2 shadow-sm text-gray-700 installment-filter"
-                    data-filter="yearly">
-
-                YEARLY
-
-            </button>
-
-        </div>
+    @include('admin.finance.partials.tabs')
 
 
-        {{-- Search --}}
-        <div class="mt-3 md:mt-0">
-
-            <input type="text"
-                   id="searchInput"
-                   placeholder="Search Fee Structure..."
-                   class="border px-4 py-2 bg-white w-80 focus:outline-none">
-
-        </div>
-
+    {{-- Filters --}}
+    <div class="flex flex-wrap items-center gap-2 mb-6">
+        <button class="px-5 py-2 border text-[10px] font-bold uppercase tracking-widest bg-white text-gray-500 hover:bg-gray-50 transition installment-filter border-gray-200" data-filter="">All Definitions</button>
+        <button class="px-5 py-2 border text-[10px] font-bold uppercase tracking-widest bg-white text-gray-500 hover:bg-gray-50 transition installment-filter border-gray-200" data-filter="monthly">Monthly</button>
+        <button class="px-5 py-2 border text-[10px] font-bold uppercase tracking-widest bg-white text-gray-500 hover:bg-gray-50 transition installment-filter border-gray-200" data-filter="quarterly">Quarterly</button>
+        <button class="px-5 py-2 border text-[10px] font-bold uppercase tracking-widest bg-white text-gray-500 hover:bg-gray-50 transition installment-filter border-gray-200" data-filter="yearly">Yearly</button>
     </div>
-
 
     {{-- Alerts --}}
     @include('admin.finance.partials.alerts')
 
-
     {{-- Table --}}
-    <div class="flex flex-row justify-between custom-table overflow-x-auto tableFixHead"
-         style="max-height:500px;">
-
-        <table class="w-full">
-
-            <thead class="bg-grey-light">
-
-                <tr class="border-t-2 border-b-2">
-
-                    <th class="text-left text-sm px-2 py-2 text-grey-darker">
-                        Structure Title
-                    </th>
-
-                    <th class="text-left text-sm px-2 py-2 text-grey-darker">
-                        Class
-                    </th>
-
-                    <th class="text-left text-sm px-2 py-2 text-grey-darker">
-                        Installment
-                    </th>
-
-                    <th class="text-left text-sm px-2 py-2 text-grey-darker">
-                        Status
-                    </th>
-
-                    <th class="text-left text-sm px-2 py-2 text-grey-darker">
-                        Actions
-                    </th>
-
-                </tr>
-
-            </thead>
-
-
-            @if(count($structures ?? []) != 0)
-
-                <tbody class="bg-grey-light"
-                       id="structureTable">
-
-                    @foreach($structures as $structure)
-
-                        <tr class="border-t-2 border-b-2 structure-row">
-
-                            {{-- Title --}}
-                            <td class="py-3 px-2 structure-title">
-
-                                {{ $structure->title }}
-
-                            </td>
-
-                            {{-- Class --}}
-                            <td class="py-3 px-2">
-
-                                {{ $structure->class->name ?? '-' }}
-
-                            </td>
-
-                            {{-- Installment --}}
-                            <td class="py-3 px-2 installment-type">
-
-                                {{ ucfirst($structure->installment_type) }}
-
-                            </td>
-
-                            {{-- Status --}}
-                            <td class="py-3 px-2">
-
-                                @if($structure->status)
-
-                                    <div class="flex justify-center">
-
-                                        <svg class="w-5 h-5 fill-current text-green-600"
-                                             xmlns="http://www.w3.org/2000/svg"
-                                             viewBox="0 0 512 512">
-
-                                            <path d="M256 0C114.615 0 0 114.615 0 256s114.615 256 256 256 256-114.615 256-256S397.385 0 256 0zm129.75 201.75L233.25 354.25c-4.5 4.5-10.5 6.75-16.5 6.75s-12-2.25-16.5-6.75l-74-74c-9-9-9-24 0-33s24-9 33 0l57.5 57.5L352.75 168.75c9-9 24-9 33 0s9 24 0 33z"/>
-
-                                        </svg>
-
-                                    </div>
-
-                                @else
-
-                                    <div class="flex justify-center">
-
-                                        <svg class="w-5 h-5 fill-current text-red-600"
-                                             xmlns="http://www.w3.org/2000/svg"
-                                             viewBox="0 0 512 512">
-
-                                            <path d="M256 0C114.615 0 0 114.615 0 256s114.615 256 256 256 256-114.615 256-256S397.385 0 256 0zm91.5 310.5c9 9 9 24 0 33s-24 9-33 0L256 285l-58.5 58.5c-9 9-24 9-33 0s-9-24 0-33L223 252l-58.5-58.5c-9-9-9-24 0-33s24-9 33 0L256 219l58.5-58.5c9-9 24-9 33 0s9 24 0 33L289 252l58.5 58.5z"/>
-
-                                        </svg>
-
-                                    </div>
-
-                                @endif
-
-                            </td>
-
-
-                            {{-- Actions --}}
-                            <td class="py-3 px-2">
-
-                                <div class="flex items-center">
-
-                                    {{-- Edit --}}
-                                    <a href="#"
-                                       class="mx-1"
-                                       title="Edit">
-
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                             class="w-4 h-4 fill-current text-black"
-                                             viewBox="0 0 512 512">
-
-                                            <path d="M290.74 93.24l128 128L142.68 497.31 0 512l14.69-142.68L290.74 93.24zM497.94 74.17l-60.11-60.11c-18.75-18.75-49.14-18.75-67.88 0l-56.56 56.56 128 128 56.56-56.56c18.75-18.74 18.75-49.13-.01-67.88z"/>
-
-                                        </svg>
-
-                                    </a>
-
-
-                                    {{-- View --}}
-                                    <a href="#"
-                                       class="mx-1"
-                                       title="View">
-
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                             class="w-4 h-4 fill-current text-black"
-                                             viewBox="0 0 576 512">
-
-                                            <path d="M572.52 241.4C518.29 135.59 407.4 64 288 64S57.71 135.59 3.48 241.4a48.35 48.35 0 0 0 0 29.2C57.71 376.41 168.6 448 288 448s230.29-71.59 284.52-177.4a48.35 48.35 0 0 0 0-29.2zM288 400c-97 0-189.09-57.89-238.27-144C98.91 169.89 191 112 288 112s189.09 57.89 238.27 144C477.09 342.11 385 400 288 400zm0-240a96 96 0 1 0 96 96 96 96 0 0 0-96-96z"/>
-
-                                        </svg>
-
-                                    </a>
-
-                                </div>
-
-                            </td>
-
-                        </tr>
-
-                    @endforeach
-
-                </tbody>
-
-            @else
-
-                <tbody class="bg-grey-light">
-
-                    <tr class="border-t-2 border-b-2">
-
-                        <td colspan="5"
-                            class="py-3 px-2 text-center">
-
-                            No Fee Structures Found
-
-                        </td>
-
+    <div class="bg-white custom-shadow border overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="bg-gray-50 border-b">
+                        <th class="px-5 py-4 text-left text-[10px] font-bold uppercase tracking-wider text-gray-600">Structure Title</th>
+                        <th class="px-5 py-4 text-left text-[10px] font-bold uppercase tracking-wider text-gray-600">Academic Class</th>
+                        <th class="px-5 py-4 text-left text-[10px] font-bold uppercase tracking-wider text-gray-600">Installment Type</th>
+                        <th class="px-5 py-4 text-center text-[10px] font-bold uppercase tracking-wider text-gray-600">Deployment Status</th>
+                        <th class="px-5 py-4 text-center text-[10px] font-bold uppercase tracking-wider text-gray-600">Administrative Actions</th>
                     </tr>
+                </thead>
 
+                <tbody class="divide-y divide-gray-100" id="structureTable">
+                    @forelse($structures as $structure)
+                        <tr class="hover:bg-gray-50 transition structure-row">
+                            <td class="px-5 py-3 font-bold text-gray-900 text-xs structure-title">
+                                {{ $structure->title }}
+                            </td>
+                            <td class="px-5 py-3 text-[10px] font-bold text-gray-600 uppercase tracking-tight">
+                                {{ $structure->class->name ?? 'Unassigned' }}
+                            </td>
+                            <td class="px-5 py-3 text-[10px] font-bold text-blue-600 uppercase tracking-widest installment-type">
+                                {{ $structure->installment_type }}
+                            </td>
+                            <td class="px-5 py-3 text-center">
+                                @if($structure->status)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-none text-[9px] font-bold bg-green-100 text-green-700 uppercase tracking-wider border border-green-200">Active</span>
+                                @else
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-none text-[9px] font-bold bg-gray-100 text-gray-400 uppercase tracking-wider border border-gray-200">Inactive</span>
+                                @endif
+                            </td>
+                            <td class="px-5 py-3 text-center">
+                                <div class="flex items-center justify-center gap-2">
+                                    <a href="{{ route('finance.fee-structures.edit', $structure->id) }}" 
+                                       class="p-1.5 text-blue-600 hover:bg-blue-50 transition border border-transparent hover:border-blue-100" title="Modify Structure">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </a>
+                                    <a href="#" class="p-1.5 text-gray-400 hover:bg-gray-50 transition border border-transparent hover:border-gray-200" title="View Structural Details">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        @include('admin.finance.partials.table-empty', ['message' => 'No fee structures defined for the selected academic cycle.'])
+                    @endforelse
                 </tbody>
-
-            @endif
+            </table>
+        </div>
+    </div>
 
         </table>
 
