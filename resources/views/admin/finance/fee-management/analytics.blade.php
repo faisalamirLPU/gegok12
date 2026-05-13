@@ -1,135 +1,238 @@
 @extends('layouts.admin.layout')
 
-@section('title', 'Fee Analytics & Reports')
+@section('title', 'Fee Analytics')
+
+@php
+    $academicYear = \App\Helpers\SiteHelper::getAcademicYear(auth()->user()->school_id);
+@endphp
 
 @section('content')
-
-<div class="max-w-6xl mx-auto px-4 py-6">
-
-    <!-- Header -->
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-800">Analytics & Reports</h1>
-        <p class="text-gray-600">Detailed fee collection analysis and insights</p>
+<div class="max-w-7xl mx-auto px-4 py-6">
+    {{-- Page Header --}}
+    <div class="mb-5 flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Analytics & Reports</h1>
+            <p class="text-sm text-gray-500 mt-0.5">Fee collection performance overview</p>
+        </div>
+        <a href="{{ route('finance.fee-management.export') }}"
+           class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export CSV
+        </a>
     </div>
 
-    <!-- Navigation Tabs -->
-    <div class="mb-6 border-b border-gray-200">
-        <div class="flex flex-wrap gap-4">
-            <a href="{{ route('finance.fee-management.index') }}" class="px-4 py-3 border-b-2 border-transparent text-gray-600 hover:text-blue-600 hover:border-blue-600">Dashboard</a>
-            <a href="{{ route('finance.fee-management.categories') }}" class="px-4 py-3 border-b-2 border-transparent text-gray-600 hover:text-blue-600 hover:border-blue-600">Categories</a>
-            <a href="{{ route('finance.fee-management.structures') }}" class="px-4 py-3 border-b-2 border-transparent text-gray-600 hover:text-blue-600 hover:border-blue-600">Structures</a>
-            <a href="{{ route('finance.fee-management.special-fees') }}" class="px-4 py-3 border-b-2 border-transparent text-gray-600 hover:text-blue-600 hover:border-blue-600">Special Fees</a>
-            <a href="{{ route('finance.fee-management.payments') }}" class="px-4 py-3 border-b-2 border-transparent text-gray-600 hover:text-blue-600 hover:border-blue-600">Payments</a>
-            <a href="{{ route('finance.fee-management.analytics') }}" class="px-4 py-3 border-b-2 border-blue-600 text-blue-600 font-semibold">Analytics</a>
+    {{-- Navigation --}}
+    @include('admin.finance.partials.navigation')
+
+    {{-- Overview Cards --}}
+    <div class="grid grid-cols-2 gap-3 mt-5 md:grid-cols-4">
+        @php
+            $totalCount = $paymentStatusBreakdown->sum('count');
+            $paidStat = $paymentStatusBreakdown->firstWhere('payment_status', 'paid');
+            $pendingStat = $paymentStatusBreakdown->firstWhere('payment_status', 'pending');
+            $totalDemand = ($paidStat->total ?? 0) + ($pendingStat->total ?? 0);
+            $collectionRate = $totalDemand > 0 ? round(($paidStat->total ?? 0) / $totalDemand * 100, 1) : 0;
+        @endphp
+        <div class="bg-white rounded-lg border border-gray-200 px-4 py-3.5">
+            <p class="text-xs font-medium text-gray-500">Total Demand</p>
+            <p class="mt-1 text-xl font-bold text-gray-900">Rs. {{ number_format($totalDemand, 0) }}</p>
+        </div>
+        <div class="bg-green-50 rounded-lg border border-green-200 px-4 py-3.5">
+            <p class="text-xs font-medium text-green-600">Total Collected</p>
+            <p class="mt-1 text-xl font-bold text-green-700">Rs. {{ number_format($paidStat->total ?? 0, 0) }}</p>
+        </div>
+        <div class="bg-red-50 rounded-lg border border-red-200 px-4 py-3.5">
+            <p class="text-xs font-medium text-red-600">Total Pending</p>
+            <p class="mt-1 text-xl font-bold text-red-700">Rs. {{ number_format($pendingStat->total ?? 0, 0) }}</p>
+        </div>
+        <div class="bg-white rounded-lg border border-gray-200 px-4 py-3.5">
+            <p class="text-xs font-medium text-gray-500">Collection Rate</p>
+            <p class="mt-1 text-xl font-bold text-blue-600">{{ $collectionRate }}%</p>
         </div>
     </div>
 
-    <!-- Payment Status Summary -->
-    <div class="mb-8">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">Payment Status Summary</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            @foreach ($paymentStatusBreakdown as $status)
-                <div class="bg-white rounded-lg shadow-md p-6">
-                    <p class="text-gray-600 text-sm font-semibold mb-2">{{ ucfirst($status->payment_status) }}</p>
-                    <p class="text-3xl font-bold text-gray-800 mb-2">{{ $status->count }}</p>
-                    <p class="text-lg font-semibold text-blue-600">₹{{ number_format($status->total, 2) }}</p>
-                </div>
-            @endforeach
+    {{-- Charts Row --}}
+    <div class="grid grid-cols-1 gap-5 mt-6 lg:grid-cols-2">
+        {{-- Monthly Collection Bar Chart --}}
+        <div class="bg-white rounded-lg border border-gray-200 p-4">
+            <h3 class="text-sm font-semibold text-gray-800 mb-3">Monthly Collection Trend</h3>
+            <div class="h-64">
+                <canvas id="monthlyChart"></canvas>
+            </div>
         </div>
-    </div>
 
-    <!-- Category-wise Breakdown -->
-    <div class="mb-8">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">Category-wise Fee Breakdown</h2>
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Category</th>
-                            <th class="px-6 py-4 text-right text-sm font-semibold text-gray-700">Count</th>
-                            <th class="px-6 py-4 text-right text-sm font-semibold text-gray-700">Total Amount</th>
-                            <th class="px-6 py-4 text-right text-sm font-semibold text-gray-700">Average Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($categoryBreakdown as $category)
-                            <tr class="border-t hover:bg-gray-50">
-                                <td class="px-6 py-4 text-sm font-semibold text-gray-800">{{ $category->name }}</td>
-                                <td class="px-6 py-4 text-right text-sm text-gray-700">{{ $category->structureItems->count() }}</td>
-                                <td class="px-6 py-4 text-right text-sm font-semibold text-gray-800">₹{{ number_format($category->structureItems->sum('amount'), 2) }}</td>
-                                <td class="px-6 py-4 text-right text-sm text-gray-700">
-                                    @if ($category->structureItems->count() > 0)
-                                        ₹{{ number_format($category->structureItems->avg('amount'), 2) }}
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4" class="px-6 py-4 text-center text-gray-500">No categories found</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+        {{-- Payment Status Doughnut --}}
+        <div class="bg-white rounded-lg border border-gray-200 p-4">
+            <h3 class="text-sm font-semibold text-gray-800 mb-3">Payment Status Breakdown</h3>
+            <div class="flex items-center justify-center h-48">
+                <canvas id="statusChart"></canvas>
+            </div>
+            <div class="flex flex-wrap justify-center gap-4 mt-3">
+                <span class="flex items-center gap-1.5 text-xs"><span class="w-2.5 h-2.5 rounded-full bg-green-500"></span> Paid ({{ $paidStat->count ?? 0 }})</span>
+                <span class="flex items-center gap-1.5 text-xs"><span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> Pending ({{ $pendingStat->count ?? 0 }})</span>
             </div>
         </div>
     </div>
 
-    <!-- Export Options -->
-    <div class="mb-8">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">Export Reports</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <a href="{{ route('finance.fee-management.export') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-lg text-center transition">
-                📥 Export All Fees (CSV)
-            </a>
-            <a href="#" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-6 rounded-lg text-center transition">
-                📊 Export to Excel
-            </a>
-            <a href="#" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-4 px-6 rounded-lg text-center transition">
-                📄 Generate PDF Report
-            </a>
+    {{-- Category Breakdown --}}
+    <div class="mt-6 bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-100">
+            <h3 class="text-sm font-semibold text-gray-800">Category-wise Fee Breakdown</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="bg-gray-50 border-b border-gray-100">
+                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Category</th>
+                        <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide">Type</th>
+                        <th class="px-3 py-2.5 text-right text-xs font-semibold text-gray-600 uppercase tracking-wide hidden sm:table-cell">Total Amount</th>
+                        <th class="px-3 py-2.5 text-right text-xs font-semibold text-gray-600 uppercase tracking-wide hidden md:table-cell">Items Count</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    @forelse ($categoryBreakdown as $category)
+                        @php
+                            $total = $category->structureItems->sum('amount');
+                        @endphp
+                        <tr class="hover:bg-gray-50/60">
+                            <td class="px-3 py-2.5">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full {{ $category->status ? 'bg-green-500' : 'bg-gray-300' }}"></span>
+                                    <div>
+                                        <div class="font-medium text-gray-900">{{ $category->name }}</div>
+                                        @if($category->code)
+                                            <div class="text-xs text-gray-400">{{ $category->code }}</div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-3 py-2.5 text-center">
+                                @if($category->is_optional)
+                                    <span class="inline-flex px-2 py-0.5 rounded text-xs font-semibold bg-purple-100 text-purple-700">Optional</span>
+                                @else
+                                    <span class="inline-flex px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 text-gray-600">Mandatory</span>
+                                @endif
+                            </td>
+                            <td class="px-3 py-2.5 text-right font-semibold text-gray-900 hidden sm:table-cell">
+                                Rs. {{ number_format($total, 0) }}
+                            </td>
+                            <td class="px-3 py-2.5 text-right text-gray-600 hidden md:table-cell">
+                                {{ $category->structureItems->count() }}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="px-4 py-8 text-center text-gray-400">No category data available</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <!-- Key Metrics -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-md p-6 text-white">
-            <p class="text-blue-100 text-sm font-semibold mb-2">Total Invoices</p>
-            <p class="text-3xl font-bold">{{ $paymentStatusBreakdown->sum('count') }}</p>
+    {{-- Due Date Overdue --}}
+    @php
+        $overdueCount = $categoryBreakdown->filter(function($cat) { return $cat->feeItems->count() > 0; })->count();
+        $totalCategoryAmount = $categoryBreakdown->sum(fn($c) => $c->feeItems->sum('amount'));
+    @endphp
+    <div class="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+        <div class="bg-white rounded-lg border border-gray-200 px-4 py-3.5 text-center">
+            <p class="text-xs font-medium text-gray-500">Paid Invoices</p>
+            <p class="mt-1 text-xl font-bold text-green-600">{{ $paidStat->count ?? 0 }}</p>
         </div>
-        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-md p-6 text-white">
-            <p class="text-green-100 text-sm font-semibold mb-2">Paid Invoices</p>
-            <p class="text-3xl font-bold">
-                @php
-                    $paid = $paymentStatusBreakdown->firstWhere('payment_status', 'paid');
-                @endphp
-                {{ $paid?->count ?? 0 }}
-            </p>
+        <div class="bg-white rounded-lg border border-gray-200 px-4 py-3.5 text-center">
+            <p class="text-xs font-medium text-gray-500">Pending Invoices</p>
+            <p class="mt-1 text-xl font-bold text-red-600">{{ $pendingStat->count ?? 0 }}</p>
         </div>
-        <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-md p-6 text-white">
-            <p class="text-orange-100 text-sm font-semibold mb-2">Pending Invoices</p>
-            <p class="text-3xl font-bold">
-                @php
-                    $pending = $paymentStatusBreakdown->firstWhere('payment_status', 'pending');
-                @endphp
-                {{ $pending?->count ?? 0 }}
-            </p>
+        <div class="bg-white rounded-lg border border-gray-200 px-4 py-3.5 text-center">
+            <p class="text-xs font-medium text-gray-500">Total Categories</p>
+            <p class="mt-1 text-xl font-bold text-gray-900">{{ $categoryBreakdown->count() }}</p>
         </div>
-        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-md p-6 text-white">
-            <p class="text-purple-100 text-sm font-semibold mb-2">Collection Rate</p>
-            <p class="text-3xl font-bold">
-                @php
-                    $total = $paymentStatusBreakdown->sum('count');
-                    $paid = $paymentStatusBreakdown->firstWhere('payment_status', 'paid');
-                    $rate = $total > 0 ? round(($paid?->count ?? 0) / $total * 100) : 0;
-                @endphp
-                {{ $rate }}%
-            </p>
+        <div class="bg-white rounded-lg border border-gray-200 px-4 py-3.5 text-center">
+            <p class="text-xs font-medium text-gray-500">Total Demand</p>
+            <p class="mt-1 text-xl font-bold text-blue-600">Rs. {{ number_format($totalDemand, 0) }}</p>
         </div>
     </div>
-
 </div>
-
 @endsection
+
+@push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"></script>
+<script>
+(function() {
+    // Monthly Collection Bar Chart
+    var monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+    var monthLabels = {!! json_encode($monthlyCollection->pluck('month')->map(fn($m) => date('M', mktime(0,0,0,$m,1)))->values()->toArray()) !!};
+    var monthData = {!! json_encode($monthlyCollection->pluck('total')->values()->toArray()) !!};
+
+    new Chart(monthlyCtx, {
+        type: 'bar',
+        data: {
+            labels: monthLabels,
+            datasets: [{
+                label: 'Collection',
+                data: monthData,
+                backgroundColor: '#3b82f6',
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            return 'Rs. ' + ctx.raw.toLocaleString();
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(val) {
+                            return 'Rs. ' + val.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Status Doughnut Chart
+    var statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Paid', 'Pending'],
+            datasets: [{
+                data: [
+                    {{ $paidStat->count ?? 0 }},
+                    {{ max(0, $pendingStat->count ?? 0) }}
+                ],
+                backgroundColor: ['#22c55e', '#ef4444'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            cutout: '65%',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            return tooltipItem.label + ': ' + tooltipItem.raw + ' invoices';
+                        }
+                    }
+                }
+            }
+        }
+    });
+})();
+</script>
+@endpush

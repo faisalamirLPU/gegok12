@@ -35,6 +35,18 @@
         </div>
     @endif
 
+    <!-- Student Fee Records -->
+    <a href="{{ route('finance.fee-records.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {{ request()->routeIs('finance.fee-records.*') ? 'bg-blue-100 text-blue-700 font-semibold' : 'text-gray-700 hover:bg-gray-100' }}">
+        <span class="text-xl">👥</span>
+        <span>Student Fee Records</span>
+    </a>
+
+    <!-- Analytics Link -->
+    <a href="{{ route('finance.fee-records.analytics') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {{ request()->routeIs('finance.fee-records.analytics*') ? 'bg-blue-100 text-blue-700 font-semibold' : 'text-gray-700 hover:bg-gray-100' }}">
+        <span class="text-xl">📈</span>
+        <span>Analytics</span>
+    </a>
+
     <!-- Legacy Routes (optional, can be hidden after transition) -->
     <div class="mt-4 border-t pt-4">
         <p class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Legacy Finance</p>

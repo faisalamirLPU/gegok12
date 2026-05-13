@@ -16,12 +16,16 @@ class Fee extends Model
         'user_id',
         'invoice_no',
         'billing_cycle',
+        'month',
+        'year',
+        'payment_period',
         'total_amount',
         'paid_amount',
         'balance',
         'due_date',
         'generated_on',
         'status',
+        'is_locked',
     ];
 
     protected $casts = [
@@ -30,7 +34,14 @@ class Fee extends Model
         'balance' => 'decimal:2',
         'due_date' => 'date',
         'generated_on' => 'date',
+        'is_locked' => 'boolean',
     ];
+
+    // Status constants
+    const STATUS_PENDING = 0;
+    const STATUS_PARTIAL = 1;
+    const STATUS_PAID = 2;
+    const STATUS_ADVANCE = 3;
 
     public function items()
     {
@@ -39,26 +50,22 @@ class Fee extends Model
 
     public function student()
     {
-        return $this->belongsTo(
-            User::class,
-            'user_id'
-        );
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function studentAcademic()
     {
-        return $this->belongsTo(
-            StudentAcademic::class,
-            'student_academic_id'
-        );
+        return $this->belongsTo(StudentAcademic::class, 'student_academic_id');
     }
 
     public function studentAssignment()
     {
-        return $this->belongsTo(
-            StudentFeeAssignment::class,
-            'student_fee_assignment_id'
-        );
+        return $this->belongsTo(StudentFeeAssignment::class, 'student_fee_assignment_id');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
     }
 
     public function getBalanceAmountAttribute(): float
@@ -77,7 +84,7 @@ class Fee extends Model
             return 'Advance';
         }
 
-        if ((float) $this->paid_amount >= (float) $this->total_amount) {
+        if ((float) $this->paid_amount >= (float) $this->total_amount && (float) $this->total_amount > 0) {
             return 'Paid';
         }
 
@@ -86,5 +93,122 @@ class Fee extends Model
         }
 
         return 'Pending';
+    }
+
+    public function getErpStatusBadgeClassAttribute(): string
+    {
+        return match ($this->erp_status) {
+            'Advance' => 'bg-blue-100 text-blue-700 border border-blue-200',
+            'Paid' => 'bg-green-100 text-green-700 border border-green-200',
+            'Partial' => 'bg-yellow-100 text-yellow-800 border border-yellow-200',
+            'Pending' => 'bg-red-100 text-red-700 border border-red-200',
+            default => 'bg-gray-100 text-gray-700 border border-gray-200',
+        };
+    }
+
+    public function getMonthNameAttribute(): string
+    {
+        if (!$this->month) {
+            return '-';
+        }
+        return \Carbon\Carbon::createFromDate($this->year ?? now()->year, $this->month, 1)->format('F');
+    }
+
+    public function getDisplayPeriodAttribute(): string
+    {
+        if ($this->month && $this->year) {
+            return \Carbon\Carbon::createFromDate($this->year, $this->month, 1)->format('F Y');
+        }
+        return $this->billing_cycle ?? '-';
+    }
+
+    public function scopeForMonth($query, int $month)
+    {
+        return $query->where('month', $month);
+    }
+
+    public function scopeForYear($query, int $year)
+    {
+        return $query->where('year', $year);
+    }
+
+    public function scopeForPeriod($query, string $period)
+    {
+        return $query->where('payment_period', $period);
+    }
+
+    public function scopeUnlocked($query)
+    {
+        return $query->where('is_locked', false);
+    }
+
+    public function scopeLocked($query)
+    {
+        return $query->where('is_locked', true);
+    }
+
+    public function scopePending($query)
+    {
+        return $query->where('status', self::STATUS_PENDING);
+    }
+
+    public function scopePaid($query)
+    {
+        return $query->where('status', self::STATUS_PAID)
+            ->orWhere(function ($q) {
+                $q->whereColumn('paid_amount', '>=', 'total_amount')
+                  ->where('total_amount', '>', 0);
+            });
+    }
+
+    public function scopePartial($query)
+    {
+        return $query->where('status', self::STATUS_PARTIAL)
+            ->orWhere(function ($q) {
+                $q->where('paid_amount', '>', 0)
+                  ->whereColumn('paid_amount', '<', 'total_amount');
+            });
+    }
+
+    public function scopeWithAdvance($query)
+    {
+        return $query->where('status', self::STATUS_ADVANCE)
+            ->orWhere(function ($q) {
+                $q->whereColumn('paid_amount', '>', 'total_amount');
+            });
+    }
+
+    public function lock(): bool
+    {
+        return $this->update(['is_locked' => true]);
+    }
+
+    public function unlock(): bool
+    {
+        return $this->update(['is_locked' => false]);
+    }
+
+    public function recalculateTotals(): self
+    {
+        $total = (float) $this->items()->sum('total');
+        $paid = (float) $this->paid_amount;
+        $balance = max($total - $paid, 0);
+
+        $status = self::STATUS_PENDING;
+        if ($paid > $total) {
+            $status = self::STATUS_ADVANCE;
+        } elseif ($paid >= $total && $total > 0) {
+            $status = self::STATUS_PAID;
+        } elseif ($paid > 0) {
+            $status = self::STATUS_PARTIAL;
+        }
+
+        $this->update([
+            'total_amount' => $total,
+            'balance' => $balance,
+            'status' => $status,
+        ]);
+
+        return $this->fresh();
     }
 }

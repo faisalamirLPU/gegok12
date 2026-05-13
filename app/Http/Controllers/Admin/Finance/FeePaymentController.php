@@ -112,39 +112,49 @@ class FeePaymentController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | Store Payment
+    | Store Payment (Alternative for fee-records modal)
     |--------------------------------------------------------------------------
     */
 
-    public function store(
-        Request $request,
-        Fee $fee
-    ) {
-
+    public function storePayment(Request $request)
+    {
         $validated = $request->validate([
-
+            'fee_id' => 'required|exists:fees,id',
             'amount' => 'required|numeric|min:1',
-
             'payment_method' => 'required|string',
-
             'transaction_id' => 'nullable|string',
-
             'remarks' => 'nullable|string',
+            'payment_date' => 'nullable|date',
         ]);
 
-        $this->feePaymentService
-            ->collectPayment(
-                $fee,
-                $validated
-            );
+        $fee = Fee::findOrFail($validated['fee_id']);
+
+        $payment = $this->feePaymentService->collectPayment($fee, $validated);
 
         return redirect()
+            ->back()
+            ->with('success', "Payment of Rs. {$payment->amount} recorded successfully. Receipt: {$payment->receipt_no}");
+    }
 
-            ->route('finance.payments.index')
+    /**
+     * Alias for storePayment to match route expectations
+     */
+    public function store(Request $request, Fee $fee)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:1',
+            'payment_method' => 'required|string',
+            'transaction_id' => 'nullable|string',
+            'remarks' => 'nullable|string',
+            'payment_date' => 'nullable|date',
+        ]);
 
-            ->with(
-                'success',
-                'Payment collected successfully.'
-            );
+        $validated['fee_id'] = $fee->id;
+
+        $payment = $this->feePaymentService->collectPayment($fee, $validated);
+
+        return redirect()
+            ->back()
+            ->with('success', "Payment of Rs. {$payment->amount} recorded successfully. Receipt: {$payment->receipt_no}");
     }
 }

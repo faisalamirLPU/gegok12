@@ -10,6 +10,8 @@ use App\Http\Controllers\Admin\Finance\StudentAssignmentController;
 use App\Http\Controllers\Admin\Finance\FeePaymentController;
 use App\Http\Controllers\Admin\Finance\StudentSpecialFeeController;
 use App\Http\Controllers\Admin\Finance\FeeManagementController;
+use App\Http\Controllers\Admin\Finance\FeeAnalyticsController;
+use App\Http\Controllers\Admin\Finance\StudentFeeRecordController;
 
 
 Route::prefix('finance')
@@ -111,29 +113,86 @@ Route::prefix('finance')
             'student-assignments',
             [StudentAssignmentController::class, 'index']
         )->name('student-assignments.index');
-    });
 
-Route::prefix('finance')
-
-    ->name('finance.')
-
-    ->group(function () {
-
-        Route::get(
-            'payments',
-            [FeePaymentController::class, 'index']
-        )->name('payments.index');
+        /*
+        |--------------------------------------------------------------------------
+        | Student Fee Records
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
-            'payments/{fee}/create',
-            [FeePaymentController::class, 'create']
-        )->name('payments.create');
+            'fee-records',
+            [StudentFeeRecordController::class, 'index']
+        )->name('fee-records.index');
+
+        Route::get(
+            'fee-records/class/{classId}',
+            [StudentFeeRecordController::class, 'byClass']
+        )->name('fee-records.by-class');
+
+        Route::get(
+            'fee-records/student/{userId}',
+            [StudentFeeRecordController::class, 'show']
+        )->name('fee-records.show');
 
         Route::post(
-            'payments/{fee}',
-            [FeePaymentController::class, 'store']
-        )->name('payments.store');
+            'fee-records/fee/{feeId}/apply-advance',
+            [StudentFeeRecordController::class, 'applyAdvance']
+        )->name('fee-records.apply-advance');
+
+        Route::post(
+            'fee-records/fee/{feeId}/toggle-lock',
+            [StudentFeeRecordController::class, 'toggleLock']
+        )->name('fee-records.toggle-lock');
+
+        Route::get(
+            'fee-records/analytics',
+            [FeeAnalyticsController::class, 'index']
+        )->name('fee-records.analytics');
+
+        Route::get(
+            'fee-records/analytics/export',
+            [FeeAnalyticsController::class, 'export']
+        )->name('fee-records.analytics.export');
     });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Payments (Outside finance prefix to fix duplicate route issue)
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        'finance/payments',
+        [FeePaymentController::class, 'index']
+    )->name('finance.payments.index');
+
+    Route::get(
+        'finance/payments/{fee}/create',
+        [FeePaymentController::class, 'create']
+    )->name('finance.payments.create');
+
+    Route::post(
+        'finance/payments/{fee}',
+        [FeePaymentController::class, 'store']
+    )->name('finance.payments.store');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Student Fee Records Payments
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post(
+        'finance/fee-records/payment',
+        [FeePaymentController::class, 'storePayment']
+    )->name('finance.fee-records.payment');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Payments (Legacy Routes)
+    |--------------------------------------------------------------------------
+    */
 
 Route::get('/dashboard', 'DashboardController@index')->name('dashboard');
 Route::get('/dashboard/event', 'DashboardController@event');
