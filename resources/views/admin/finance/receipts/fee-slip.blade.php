@@ -328,20 +328,27 @@
 
                     </tr>
 
-                    <tr>
-
-                        <td>
-                            Paid Amount
-                        </td>
-
-                        <td class="text-right">
-
-                            Rs.
-                            {{ number_format($fee->paid_amount, 2) }}
-
-                        </td>
-
-                    </tr>
+                    @if($fee->status == \App\Models\Fee::STATUS_ADVANCE || $fee->advance_credit > 0)
+                        <tr>
+                            <td>Paid Against Invoice</td>
+                            <td class="text-right">
+                                Rs. {{ number_format($fee->total_amount, 2) }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Advance Credit</td>
+                            <td class="text-right">
+                                Rs. {{ number_format($fee->advance_credit, 2) }}
+                            </td>
+                        </tr>
+                    @else
+                        <tr>
+                            <td>Paid Amount</td>
+                            <td class="text-right">
+                                Rs. {{ number_format($fee->paid_amount, 2) }}
+                            </td>
+                        </tr>
+                    @endif
 
                     <tr>
 

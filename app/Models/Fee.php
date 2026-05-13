@@ -78,6 +78,11 @@ class Fee extends Model
         return max((float) $this->paid_amount - (float) $this->total_amount, 0);
     }
 
+    public function getAdvanceCreditAttribute(): float
+    {
+        return max((float) $this->paid_amount - (float) $this->total_amount, 0);
+    }
+
     public function getErpStatusAttribute(): string
     {
         if ($this->advance_amount > 0) {
