@@ -7,22 +7,23 @@ use Illuminate\Support\Str;
 @endphp
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 py-6">
+<div class="relative">
     {{-- Page Header --}}
-    <div class="mb-5 flex items-center justify-between">
+    <div class="flex flex-wrap lg:flex-row justify-between my-3">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Fee Categories</h1>
-            <p class="text-sm text-gray-500 mt-0.5">Manage all fee categories for your school</p>
+            <h1 class="admin-h1 my-3">Fee Categories</h1>
         </div>
-        <a href="{{ route('finance.fee-categories.create') }}"
-           class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-            New Category
-        </a>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('finance.fee-categories.create') }}"
+               class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                Add Category
+            </a>
+        </div>
     </div>
 
     {{-- Navigation --}}
-    @include('admin.finance.partials.navigation')
+    @include('admin.finance.partials.tabs')
 
     {{-- Categories Table --}}
     <div class="mt-5 bg-white rounded-lg border border-gray-200 overflow-hidden">

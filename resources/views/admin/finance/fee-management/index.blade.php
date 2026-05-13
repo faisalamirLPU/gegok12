@@ -5,12 +5,11 @@
 @section('title', 'Fee Management')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 py-6">
+<div class="relative">
     {{-- Page Header --}}
-    <div class="mb-5 flex items-center justify-between">
+    <div class="flex flex-wrap lg:flex-row justify-between my-3">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Fee Management</h1>
-            <p class="text-sm text-gray-500 mt-0.5">{{ $academicYear->name ?? 'N/A' }}</p>
+            <h1 class="admin-h1 my-3">Fee Management ({{ $academicYear->name ?? 'N/A' }})</h1>
         </div>
         <div class="flex items-center gap-2">
             <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
@@ -23,7 +22,7 @@
     </div>
 
     {{-- Navigation --}}
-    @include('admin.finance.partials.navigation')
+    @include('admin.finance.partials.tabs')
 
     {{-- Stats Row --}}
     <div class="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6 mt-5">

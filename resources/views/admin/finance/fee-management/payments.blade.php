@@ -7,21 +7,16 @@
 @section('title', 'Fee Payments')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 py-6">
+<div class="relative">
     {{-- Page Header --}}
-    <div class="mb-6 flex items-center justify-between">
+    <div class="flex flex-wrap lg:flex-row justify-between my-3">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Fee Payments</h1>
-            <p class="text-sm text-gray-500 mt-0.5">ERP invoice ledger with fee category breakdowns</p>
-        </div>
-        <div class="flex items-center gap-3">
-            <span class="text-sm text-gray-500">Academic Year:</span>
-            <span class="px-3 py-1 bg-blue-50 text-blue-700 text-sm font-semibold rounded-full">{{ $academicYear->name ?? 'N/A' }}</span>
+            <h1 class="admin-h1 my-3">Fee Payments ({{ $academicYear->name ?? 'N/A' }})</h1>
         </div>
     </div>
 
     {{-- Navigation --}}
-    @include('admin.finance.partials.navigation')
+    @include('admin.finance.partials.tabs')
 
     {{-- Summary Cards --}}
     <div class="grid grid-cols-2 gap-3 mt-6 md:grid-cols-4">

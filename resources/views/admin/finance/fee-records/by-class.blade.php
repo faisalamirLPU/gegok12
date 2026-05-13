@@ -9,21 +9,22 @@
 )
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 py-6">
+<div class="relative">
     {{-- Header --}}
-    <div class="mb-6">
-        <div class="flex items-center gap-2 text-sm text-gray-500 mb-2">
-            <a href="{{ route('finance.fee-records.index') }}" class="hover:text-blue-600">Fee Records</a>
-            <span>/</span>
-            <span>{{ $classLink->standard->name ?? '' }} {{ $classLink->section->name ?? '' }}</span>
+    <div class="flex flex-wrap lg:flex-row justify-between my-3">
+        <div>
+            <div class="flex items-center gap-2 text-sm text-gray-500 mb-1">
+                <a href="{{ route('finance.fee-records.index') }}" class="hover:text-blue-600">Fee Records</a>
+                <span>/</span>
+                <span>{{ $classLink->standard->name ?? '' }} {{ $classLink->section->name ?? '' }}</span>
+            </div>
+            <h1 class="admin-h1">
+                {{ $classLink->standard->name ?? '' }} {{ $classLink->section->name ?? '' }} ({{ $academicYear->name }})
+            </h1>
         </div>
-        <h1 class="text-3xl font-bold text-gray-900">
-            {{ $classLink->standard->name ?? '' }} {{ $classLink->section->name ?? '' }}
-        </h1>
-        <p class="text-gray-600 mt-1">{{ $paymentPeriod }} - {{ $academicYear->name }}</p>
     </div>
 
-    @include('admin.finance.partials.navigation')
+    @include('admin.finance.partials.tabs')
 
     {{-- Month Selector --}}
     <div class="bg-white rounded-lg border border-gray-200 p-4 mb-6">

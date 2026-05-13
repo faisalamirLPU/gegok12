@@ -7,22 +7,23 @@
 @endphp
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 py-6">
+<div class="relative">
     {{-- Page Header --}}
-    <div class="mb-5 flex items-center justify-between">
+    <div class="flex flex-wrap lg:flex-row justify-between my-3">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Analytics & Reports</h1>
-            <p class="text-sm text-gray-500 mt-0.5">Fee collection performance overview</p>
+            <h1 class="admin-h1 my-3">Analytics & Reports</h1>
         </div>
-        <a href="{{ route('finance.fee-management.export') }}"
-           class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-            Export CSV
-        </a>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('finance.fee-management.export') }}"
+               class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                Export CSV
+            </a>
+        </div>
     </div>
 
     {{-- Navigation --}}
-    @include('admin.finance.partials.navigation')
+    @include('admin.finance.partials.tabs')
 
     {{-- Overview Cards --}}
     <div class="grid grid-cols-2 gap-3 mt-5 md:grid-cols-4">

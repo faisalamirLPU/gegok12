@@ -3,13 +3,14 @@
 @section('title', 'Student Fee Records')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 py-6">
-    <div class="mb-6">
-        <h1 class="text-3xl font-bold text-gray-900">Student Fee Records</h1>
-        <p class="text-gray-600 mt-1">Monthly fee status for all students - {{ $academicYear->name }}</p>
+<div class="relative">
+    <div class="flex flex-wrap lg:flex-row justify-between my-3">
+        <div>
+            <h1 class="admin-h1 my-3">Student Fee Records</h1>
+        </div>
     </div>
 
-    @include('admin.finance.partials.navigation')
+    @include('admin.finance.partials.tabs')
 
     {{-- Month/Year Filter --}}
     <div class="bg-white rounded-lg border border-gray-200 p-4 mb-6">
