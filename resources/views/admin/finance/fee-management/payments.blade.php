@@ -152,7 +152,7 @@
                             <td class="px-3 py-2.5 max-w-[180px]">
                                 <div class="flex flex-wrap gap-1">
                                     @forelse($fee->items->take(3) as $item)
-                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 cursor-help" title="{{ $item->remarks }}">
                                             {{ $item->category->code ?? $item->category->name ?? 'Other' }}
                                         </span>
                                     @empty

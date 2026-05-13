@@ -280,7 +280,14 @@ class MonthlyInvoiceGeneratorService
                     continue;
                 }
 
-                $this->mergeInvoiceItem($invoice, $item->fee_category_id, (float) $item->amount);
+                $this->mergeInvoiceItem(
+                    $invoice,
+                    (int) $item->fee_category_id,
+                    (float) $item->amount,
+                    'structure',
+                    (int) $item->id,
+                    $structure->title
+                );
             }
         }
     }
@@ -303,7 +310,14 @@ class MonthlyInvoiceGeneratorService
                 continue;
             }
 
-            $this->mergeInvoiceItem($invoice, $specialFee->fee_category_id, (float) $specialFee->amount);
+            $this->mergeInvoiceItem(
+                $invoice,
+                (int) $specialFee->fee_category_id,
+                (float) $specialFee->amount,
+                'special',
+                (int) $specialFee->id,
+                $specialFee->remarks
+            );
 
             // Mark special fee as processed for this period
             $specialFee->update(['status' => 2]); // 2 = applied to invoice
@@ -338,18 +352,31 @@ class MonthlyInvoiceGeneratorService
 
     /**
      * Merge an item into existing invoice or create new one
+     * Logic: Standardize on source_type and source_id to prevent duplicate merging
      */
-    protected function mergeInvoiceItem(Fee $invoice, int $feeCategoryId, float $amount): FeeItem
-    {
+    protected function mergeInvoiceItem(
+        Fee $invoice,
+        int $feeCategoryId,
+        float $amount,
+        ?string $sourceType = null,
+        ?int $sourceId = null,
+        ?string $remarks = null
+    ): FeeItem {
+        // Unique check includes source to allow separate rows for same category
         $item = FeeItem::firstOrNew([
             'fee_id' => $invoice->id,
             'fee_category_id' => $feeCategoryId,
+            'source_type' => $sourceType,
+            'source_id' => $sourceId,
         ]);
 
-        $item->amount = (float) ($item->amount ?? 0) + $amount;
+        $item->amount = (float) $amount; // Overwrite or set initial
         $item->fine_amount = (float) ($item->fine_amount ?? 0);
         $item->total = (float) $item->amount + (float) $item->fine_amount;
+        $item->remarks = $remarks;
         $item->save();
+
+        \Log::info("ERP Invoice Item Created/Updated: [Inv: {$invoice->id}] [Cat: {$feeCategoryId}] [Amount: {$amount}] [Source: {$sourceType} ID: {$sourceId}]");
 
         return $item;
     }
@@ -359,8 +386,11 @@ class MonthlyInvoiceGeneratorService
      */
     protected function refreshInvoice(Fee $invoice, ?StudentAcademic $studentAcademic): Fee
     {
-        // Re-add structural fees (will merge with existing items)
+        // Re-add structural fees
         $this->addStructuralFees($invoice, $studentAcademic);
+
+        // Add any pending special fees
+        $this->addSpecialFees($invoice);
 
         // Refresh totals
         return $invoice->recalculateTotals();

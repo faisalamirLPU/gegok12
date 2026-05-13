@@ -12,6 +12,9 @@ class FeeItem extends Model
         'amount',
         'fine_amount',
         'total',
+        'remarks',
+        'source_type',
+        'source_id',
     ];
 
     /*

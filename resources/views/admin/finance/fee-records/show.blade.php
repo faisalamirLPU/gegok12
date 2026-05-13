@@ -124,7 +124,9 @@
                                         @foreach($fee->items as $item)
                                             <div class="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
                                                 <div>
-                                                    <span class="text-xs font-semibold text-gray-700">{{ $item->category->name ?? 'Uncategorized' }}</span>
+                                                    <span class="text-xs font-semibold text-gray-700">
+                                                        {{ $item->remarks ?: ($item->category->name ?? 'Uncategorized') }}
+                                                    </span>
                                                     @if((float) $item->fine_amount > 0)
                                                         <span class="text-[10px] text-red-500 ml-2 font-medium">+ Fine: Rs. {{ number_format($item->fine_amount, 0) }}</span>
                                                     @endif
