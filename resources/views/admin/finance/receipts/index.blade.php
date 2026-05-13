@@ -1,30 +1,117 @@
 @extends('layouts.admin.layout')
 
-@section('title', 'Receipts')
+@section('title', 'Payment Receipts')
 
 @section('content')
 
-<div class="relative">
+    <div class="relative">
 
-    @include('admin.finance.components.header', [
-        'title' => 'Receipts',
-        'subtitle' => 'Receipt management system'
-    ])
+        <div class="flex items-center justify-between my-4">
 
-    @include('admin.finance.partials.tabs')
+            <div>
 
-    <div class="bg-white custom-shadow border p-12 text-center text-gray-500">
-        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-        <h4 class="text-lg font-bold text-gray-800">
-            Receipt Module Under Development
-        </h4>
-        <p class="text-sm text-gray-400 mt-2">
-            This module is currently being implemented.
-        </p>
+                <h1 class="admin-h1">
+                    Payment Receipts
+                </h1>
+
+                <p class="text-sm text-gray-500 mt-1">
+                    Invoice:
+                    {{ $fee->invoice_no }}
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="bg-white custom-shadow border overflow-hidden">
+
+            <table class="w-full">
+
+                <thead>
+
+                    <tr class="bg-gray-50 border-b">
+
+                        <th class="px-4 py-3 text-left text-xs font-bold uppercase">
+                            Receipt No
+                        </th>
+
+                        <th class="px-4 py-3 text-left text-xs font-bold uppercase">
+                            Date
+                        </th>
+
+                        <th class="px-4 py-3 text-left text-xs font-bold uppercase">
+                            Method
+                        </th>
+
+                        <th class="px-4 py-3 text-right text-xs font-bold uppercase">
+                            Amount
+                        </th>
+
+                        <th class="px-4 py-3 text-center text-xs font-bold uppercase">
+                            Action
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @forelse($fee->payments as $payment)
+
+                        <tr class="border-b">
+
+                            <td class="px-4 py-3 text-sm font-mono">
+                                {{ $payment->receipt_no }}
+                            </td>
+
+                            <td class="px-4 py-3 text-sm">
+                                {{ optional($payment->payment_date)->format('d M Y') }}
+                            </td>
+
+                            <td class="px-4 py-3 text-sm uppercase">
+                                {{ $payment->payment_method }}
+                            </td>
+
+                            <td class="px-4 py-3 text-sm text-right font-bold text-green-700">
+                                Rs. {{ number_format($payment->amount, 2) }}
+                            </td>
+
+                            <td class="px-4 py-3 text-center">
+
+                                <a href="{{ route('finance.receipt', $payment->id)}}" target="_blank"
+                                    class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-100 rounded hover:bg-blue-100 transition">
+
+                                    <span class="text-xs font-bold uppercase">
+                                        View Receipt
+                                    </span>
+
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                    @empty
+
+                        <tr>
+
+                            <td colspan="5" class="px-4 py-10 text-center text-gray-400">
+
+                                No receipts found.
+
+                            </td>
+
+                        </tr>
+
+                    @endforelse
+
+                </tbody>
+
+            </table>
+
+        </div>
+
     </div>
-
-</div>
 
 @endsection

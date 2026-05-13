@@ -16,6 +16,16 @@ use App\Http\Controllers\Admin\Finance\StudentFeeRecordController;
 
 
 Route::get(
+    'finance/fee-slip/{fee}',
+    [App\Http\Controllers\Admin\Finance\FeeSlipController::class, 'show']
+)->name('finance.fee-slip');
+
+Route::get(
+    'finance/receipts/{fee}',
+    [App\Http\Controllers\Admin\Finance\ReceiptController::class, 'index']
+)->name('finance.receipts.index');
+
+Route::get(
     '/finance/receipt/{payment}',
     [FeePaymentController::class, 'receipt']
 )->name('finance.receipt');
