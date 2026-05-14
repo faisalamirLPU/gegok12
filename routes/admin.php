@@ -170,6 +170,48 @@ Route::prefix('finance')
             'fee-records/analytics/export',
             [FeeAnalyticsController::class, 'export']
         )->name('fee-records.analytics.export');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Finance Reports
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            'reports/collection',
+            [\App\Http\Controllers\Admin\Finance\FinanceReportController::class, 'collection']
+        )->name('reports.collection');
+
+        Route::get(
+            'reports/outstanding',
+            [\App\Http\Controllers\Admin\Finance\FinanceReportController::class, 'outstanding']
+        )->name('reports.outstanding');
+
+        Route::get(
+            'reports/advance-balances',
+            [\App\Http\Controllers\Admin\Finance\FinanceReportController::class, 'advanceBalances']
+        )->name('reports.advance-balances');
+
+        Route::get(
+            'reports/aging',
+            [\App\Http\Controllers\Admin\Finance\FinanceReportController::class, 'aging']
+        )->name('reports.aging');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Parent Statements
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            'statements/{student}',
+            [\App\Http\Controllers\Admin\Finance\ParentStatementController::class, 'show']
+        )->name('statements.show');
+
+        Route::get(
+            'statements/{student}/pdf',
+            [\App\Http\Controllers\Admin\Finance\ParentStatementController::class, 'pdf']
+        )->name('statements.pdf');
     });
 
 /*
@@ -203,6 +245,22 @@ Route::post(
     'finance/fee-records/payment',
     [FeePaymentController::class, 'storePayment']
 )->name('finance.fee-records.payment');
+
+/*
+|--------------------------------------------------------------------------
+| Audit Trails
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    'audit-trails',
+    [\App\Http\Controllers\Admin\Audit\AuditTrailController::class, 'index']
+)->name('audit-trails.index')->middleware('auth');
+
+Route::get(
+    'audit-trails/{id}',
+    [\App\Http\Controllers\Admin\Audit\AuditTrailController::class, 'show']
+)->name('audit-trails.show')->middleware('auth');
 
 /*
 |--------------------------------------------------------------------------

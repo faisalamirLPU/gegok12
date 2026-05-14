@@ -233,6 +233,15 @@ class MonthlyInvoiceGeneratorService
             // AUTOMATION: Automatically apply available advance credits
             $this->advanceCreditService->applyAdvanceToInvoice($invoice);
 
+            \App\Services\Audit\AuditTrailService::log(
+                'invoice generated',
+                "Generated invoice {$invoice->invoice_no} for student ID {$userId}",
+                Fee::class,
+                $invoice->id,
+                null,
+                ['total_amount' => $invoice->total_amount, 'billing_cycle' => $invoice->payment_period]
+            );
+
             return $invoice->fresh(['items.category', 'payments']);
         });
     }
@@ -396,7 +405,18 @@ class MonthlyInvoiceGeneratorService
         $this->addSpecialFees($invoice);
 
         // Refresh totals
-        return $invoice->recalculateTotals();
+        $invoice->recalculateTotals();
+
+        \App\Services\Audit\AuditTrailService::log(
+            'invoice refreshed',
+            "Refreshed invoice {$invoice->invoice_no}",
+            Fee::class,
+            $invoice->id,
+            null,
+            ['total_amount' => $invoice->total_amount]
+        );
+
+        return $invoice;
     }
 
     /**

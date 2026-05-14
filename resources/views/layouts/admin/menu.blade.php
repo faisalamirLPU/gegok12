@@ -64,8 +64,21 @@
                         <span class="mx-3 whitespace-no-wrap">Analytics</span>
                     </a>
                 </li>
+                <li class="py-3 px-3 {{ Request::segment('3') == 'reports' ? 'active' : '' }}">
+                    <a href="{{ route('finance.reports.collection') }}" class="flex items-center">
+                        <span class="text-xs">📊</span>
+                        <span class="mx-3 whitespace-no-wrap">Finance Reports</span>
+                    </a>
+                </li>
             </ul>
         @endif
+    </li>
+
+    <li class="py-3 px-3 {{ Request::segment('2') == 'audit-trails' ? 'active' : '' }}">
+        <a href="{{ route('audit-trails.index') }}" class="flex items-center">
+            <span class="w-5 h-5 text-center font-bold">📜</span>
+            <span class="mx-3 whitespace-no-wrap">Audit Trails</span>
+        </a>
     </li>
 
     <li class="py-3 px-3 {{ Request::segment('2') == 'teacher-credentials' ? 'active' : '' }}">

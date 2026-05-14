@@ -105,6 +105,15 @@ class AdvanceCreditService
 
             $invoice->recalculateStatus();
 
+            \App\Services\Audit\AuditTrailService::log(
+                'advance applied',
+                "Auto-applied advance {$amountToApply} to invoice {$invoice->invoice_no}",
+                Fee::class,
+                $invoice->id,
+                ['paid_amount' => $invoice->paid_amount - $amountToApply, 'balance' => $invoice->balance + $amountToApply],
+                ['paid_amount' => $newPaidAmount, 'balance' => $newBalance, 'applied' => $amountToApply]
+            );
+
             return [
                 'applied' => $newPaidAmount,
                 'remaining' => $this->getAdvanceBalance($invoice->school_id, $invoice->user_id),

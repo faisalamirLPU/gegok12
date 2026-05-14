@@ -177,6 +177,15 @@ class FeePaymentService
                 );
             }
 
+            \App\Services\Audit\AuditTrailService::log(
+                'payment collected',
+                "Collected {$amount} via {$paymentMethod} for invoice {$fee->invoice_no}",
+                Payment::class,
+                $payment->id,
+                ['paid_amount' => $currentPaid],
+                ['paid_amount' => $newPaidAmount, 'method' => $paymentMethod, 'amount' => $amount]
+            );
+
             return $payment;
         });
     }
@@ -318,6 +327,15 @@ class FeePaymentService
 
             $fee->recalculateStatus();
 
+            \App\Services\Audit\AuditTrailService::log(
+                'advance applied',
+                "Applied advance {$amountToApply} to invoice {$fee->invoice_no}",
+                Fee::class,
+                $fee->id,
+                ['paid_amount' => $fee->paid_amount - $amountToApply, 'balance' => $fee->balance + $amountToApply],
+                ['paid_amount' => $newPaid, 'balance' => $balance, 'applied' => $amountToApply]
+            );
+
             return [
 
                 'success' => true,
@@ -436,6 +454,15 @@ class FeePaymentService
                     $payment->remarks .
                     " [REVERSED: {$reason}]",
             ]);
+
+            \App\Services\Audit\AuditTrailService::log(
+                'payment reversed',
+                "Reversed payment {$payment->receipt_no} for invoice {$fee->invoice_no}. Reason: {$reason}",
+                Payment::class,
+                $payment->id,
+                ['status' => 'active', 'fee_paid' => $fee->paid_amount + $payment->amount],
+                ['status' => 'reversed', 'fee_paid' => $newPaid]
+            );
 
             return true;
         });
