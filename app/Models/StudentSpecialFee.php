@@ -4,10 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\Finance\Archivable;
 
 class StudentSpecialFee extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes,
+        Archivable;
+
+    public const STATUS_INACTIVE = 0;
+    public const STATUS_ACTIVE = 1;
+    public const STATUS_APPLIED = 2;
+    public const STATUS_CANCELLED = 3;
 
     protected $fillable = [
 
@@ -33,6 +40,8 @@ class StudentSpecialFee extends Model
         'amount' => 'decimal:2',
 
         'due_date' => 'date',
+
+        'is_archived' => 'boolean',
     ];
 
     public function student()

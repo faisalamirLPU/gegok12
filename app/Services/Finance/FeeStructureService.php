@@ -2,10 +2,12 @@
 
 namespace App\Services\Finance;
 
+use App\Models\Fee;
 use App\Models\FeeStructure;
 use App\Models\FeeStructureItem;
 use App\Models\StudentFeeAssignment;
 use Illuminate\Support\Facades\DB;
+use App\Services\Audit\AuditTrailService;
 use App\Services\Finance\FeeAssignmentService;
 use App\Models\StandardLink;
 
@@ -81,5 +83,52 @@ class FeeStructureService
 
             return $structure;
         });
+    }
+
+    public function delete(FeeStructure $structure): array
+    {
+        $structure->fill([
+            'status' => false,
+            'is_archived' => true,
+        ])->save();
+
+        $structure->items()->delete();
+
+        if (! $structure->trashed()) {
+            $structure->delete();
+        }
+
+        AuditTrailService::log(
+            'archive_fee_structure',
+            sprintf('Archived fee structure #%s.', $structure->id),
+            FeeStructure::class,
+            $structure->id,
+            null,
+            $structure->toArray()
+        );
+
+        return ['message' => 'Fee structure archived successfully.'];
+    }
+
+    public function restore(int $id): FeeStructure
+    {
+        $structure = FeeStructure::withTrashed()->findOrFail($id);
+        $structure->restore();
+        $structure->fill([
+            'status' => true,
+            'is_archived' => false,
+        ])->save();
+        $structure->items()->withTrashed()->restore();
+
+        AuditTrailService::log(
+            'restore_fee_structure',
+            sprintf('Restored fee structure #%s.', $structure->id),
+            FeeStructure::class,
+            $structure->id,
+            null,
+            $structure->toArray()
+        );
+
+        return $structure;
     }
 }

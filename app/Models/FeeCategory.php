@@ -4,15 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\Finance\Archivable;
 use App\Traits\Finance\BelongsToSchool;
 use App\Traits\Finance\BelongsToAcademicYear;
 use App\Traits\Finance\TracksUserActions;
+
 class FeeCategory extends Model
 {
     use SoftDeletes,
-    BelongsToSchool,
-    BelongsToAcademicYear,
-    TracksUserActions;
+        Archivable,
+        BelongsToSchool,
+        BelongsToAcademicYear,
+        TracksUserActions;
 
     protected $fillable = [
 
@@ -37,6 +40,7 @@ class FeeCategory extends Model
         'is_refundable' => 'boolean',
         'is_optional' => 'boolean',
         'status' => 'boolean',
+        'is_archived' => 'boolean',
     ];
 
     /*
@@ -62,6 +66,14 @@ class FeeCategory extends Model
     {
         return $this->hasMany(
             FeeStructureItem::class,
+            'fee_category_id'
+        );
+    }
+
+    public function studentSpecialFees()
+    {
+        return $this->hasMany(
+            StudentSpecialFee::class,
             'fee_category_id'
         );
     }

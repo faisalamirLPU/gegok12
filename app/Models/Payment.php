@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Traits\Finance\ImmutableAccountingRecord;
 use Illuminate\Database\Eloquent\Model;
 
 class Payment extends Model
 {
+    use ImmutableAccountingRecord;
 
     protected $casts = [
 

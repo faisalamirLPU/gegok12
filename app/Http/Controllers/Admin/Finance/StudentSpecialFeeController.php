@@ -11,22 +11,30 @@ use App\Models\StudentSpecialFee;
 use App\Models\UserProfile;
 use App\Helpers\SiteHelper;
 use App\Services\Finance\MonthlyInvoiceGeneratorService;
+use App\Services\Finance\StudentSpecialFeeService;
 
 class StudentSpecialFeeController extends Controller
 {
     public function __construct(
-        protected \App\Services\Finance\MonthlyInvoiceGeneratorService $invoiceGenerator
+        protected \App\Services\Finance\MonthlyInvoiceGeneratorService $invoiceGenerator,
+        protected StudentSpecialFeeService $specialFeeService
     ) {
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $fees = StudentSpecialFee::with([
             'student.userprofile',
             'feeCategory'
-        ])
-        ->latest()
-        ->paginate(20);
+        ]);
+
+        if ($request->status === 'archived') {
+            $fees->onlyTrashed();
+        } elseif ($request->status === 'cancelled') {
+            $fees->where('status', StudentSpecialFee::STATUS_CANCELLED);
+        }
+
+        $fees = $fees->latest()->paginate(20)->withQueryString();
 
         return view(
             'admin.finance.special-fees.index',
@@ -187,10 +195,20 @@ class StudentSpecialFeeController extends Controller
      */
     public function destroy(StudentSpecialFee $specialFee)
     {
-        $specialFee->delete();
+        $result = $this->specialFeeService->delete($specialFee);
 
         return redirect()
             ->route('finance.fee-management.special-fees')
-            ->with('success', 'Special fee assignment removed successfully.');
+            ->with('success', $result['message']);
+    }
+
+    public function restore($id)
+    {
+        $specialFee = StudentSpecialFee::withTrashed()->findOrFail($id);
+        $this->specialFeeService->restore($specialFee);
+
+        return redirect()
+            ->route('finance.fee-management.special-fees')
+            ->with('success', 'Special fee restored successfully.');
     }
 }

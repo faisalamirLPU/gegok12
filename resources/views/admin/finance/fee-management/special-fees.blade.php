@@ -23,6 +23,17 @@
     {{-- Navigation --}}
     @include('admin.finance.partials.tabs')
 
+    <div class="flex flex-wrap items-center gap-3 mt-4">
+        <form method="GET" class="flex items-center gap-2">
+            <label for="statusFilter" class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Filter:</label>
+            <select id="statusFilter" name="status" onchange="this.form.submit()" class="rounded border-gray-300 text-sm focus:border-blue-500 focus:ring-0 px-3 py-2">
+                <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active</option>
+                <option value="applied" {{ request('status') === 'applied' ? 'selected' : '' }}>Applied</option>
+                <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                <option value="archived" {{ request('status') === 'archived' ? 'selected' : '' }}>Archived</option>
+            </select>
+        </form>
+
     {{-- Special Fees Table --}}
     <div class="mt-5 bg-white custom-shadow border overflow-hidden">
         <div class="overflow-x-auto">
@@ -88,9 +99,14 @@
                                     $statusMap = [
                                         1 => ['bg-green-100', 'text-green-700', 'Active'],
                                         2 => ['bg-blue-100', 'text-blue-700', 'Applied'],
+                                        3 => ['bg-orange-100', 'text-orange-700', 'Cancelled'],
                                         0 => ['bg-gray-100', 'text-gray-600', 'Inactive'],
                                     ];
-                                    $s = $statusMap[$fee->status] ?? ['bg-gray-100', 'text-gray-600', 'Unknown'];
+                                    if ($fee->trashed()) {
+                                        $s = ['bg-gray-100', 'text-gray-500', 'Archived'];
+                                    } else {
+                                        $s = $statusMap[$fee->status] ?? ['bg-gray-100', 'text-gray-600', 'Unknown'];
+                                    }
                                 @endphp
                                 <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold {{ $s[0] }} {{ $s[1] }}">
                                     {{ $s[2] }}
@@ -100,17 +116,26 @@
                             {{-- Actions --}}
                             <td class="px-4 py-3 text-center">
                                 <div class="flex items-center justify-center gap-1">
-                                    <a href="{{ route('finance.special-fees.edit', $fee->id) }}"
-                                       class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition" title="Edit">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                    </a>
-                                    <form action="{{ route('finance.special-fees.destroy', $fee->id) }}" method="POST" class="inline" onsubmit="return confirm('Delete this special fee?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition" title="Delete">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                        </button>
-                                    </form>
+                                    @if($fee->trashed())
+                                        <form action="{{ route('finance.special-fees.restore', $fee->id) }}" method="POST" class="inline">
+                                            @csrf
+                                            <button type="submit" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition" title="Restore Special Fee" onclick="return confirm('Restore this archived special fee?')">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12l6 6 10-10"/></svg>
+                                            </button>
+                                        </form>
+                                    @else
+                                        <a href="{{ route('finance.special-fees.edit', $fee->id) }}"
+                                           class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition" title="Edit">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                        </a>
+                                        <form action="{{ route('finance.special-fees.destroy', $fee->id) }}" method="POST" class="inline" onsubmit="return confirm('Archive this special fee and preserve all historical records?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition" title="Archive">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

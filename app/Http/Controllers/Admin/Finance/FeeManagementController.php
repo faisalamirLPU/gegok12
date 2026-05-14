@@ -120,16 +120,26 @@ class FeeManagementController extends Controller
     /**
      * Show all special fees
      */
-    public function specialFees()
+    public function specialFees(Request $request)
     {
-        $specialFees = StudentSpecialFee::with([
+        $query = StudentSpecialFee::with([
             'student.userprofile',
             'feeCategory'
         ])
         ->where('school_id', Auth::user()->school_id)
-        ->where('academic_year_id', SiteHelper::getAcademicYear(Auth::user()->school_id)->id)
-        ->latest()
-        ->paginate(20);
+        ->where('academic_year_id', SiteHelper::getAcademicYear(Auth::user()->school_id)->id);
+
+        if ($request->status === 'archived') {
+            $query->onlyTrashed();
+        } elseif ($request->status === 'cancelled') {
+            $query->where('status', StudentSpecialFee::STATUS_CANCELLED);
+        } elseif ($request->status === 'applied') {
+            $query->where('status', StudentSpecialFee::STATUS_APPLIED);
+        } elseif ($request->status === 'active') {
+            $query->where('status', StudentSpecialFee::STATUS_ACTIVE);
+        }
+
+        $specialFees = $query->latest()->paginate(20)->withQueryString();
 
         return view(
             'admin.finance.fee-management.special-fees',
@@ -156,7 +166,7 @@ class FeeManagementController extends Controller
             ->where('academic_year_id', $academicYear->id)
             // ERP Filter: Only show valid invoices with items and correct format
             ->where('total_amount', '>', 0)
-            ->where('invoice_no', 'like', 'INV-20%') 
+            ->where('invoice_no', 'like', 'INV-20%')
             ->when(
                 $request->search,
                 function ($query, $search) {

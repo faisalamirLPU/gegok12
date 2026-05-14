@@ -25,6 +25,16 @@
 
     @include('admin.finance.partials.tabs')
 
+    <div class="flex flex-wrap items-center gap-3 mt-4">
+        <form method="GET" class="flex items-center gap-2">
+            <label for="statusFilter" class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Filter:</label>
+            <select id="statusFilter" name="status" onchange="this.form.submit()" class="rounded border-gray-300 text-sm focus:border-blue-500 focus:ring-0 px-3 py-2">
+                <option value="">Active</option>
+                <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>Inactive</option>
+                <option value="archived" {{ request('status') === 'archived' ? 'selected' : '' }}>Archived</option>
+            </select>
+        </form>
+
     {{-- Table --}}
     <div class="mt-6 bg-white custom-shadow border overflow-hidden">
         <div class="overflow-x-auto">
@@ -69,7 +79,9 @@
                                 @endif
                             </td>
                             <td class="px-5 py-3 text-center">
-                                @if($category->status)
+                                @if($category->trashed())
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-none text-[9px] font-bold bg-gray-100 text-gray-500 uppercase tracking-wider border border-gray-200">Archived</span>
+                                @elseif($category->status)
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-none text-[9px] font-bold bg-green-100 text-green-700 uppercase tracking-wider border border-green-200">Active</span>
                                 @else
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-none text-[9px] font-bold bg-gray-100 text-gray-500 uppercase tracking-wider border border-gray-200">Inactive</span>
@@ -77,21 +89,32 @@
                             </td>
                             <td class="px-5 py-3 text-center">
                                 <div class="flex items-center justify-center gap-2">
-                                    <a href="{{ route('finance.fee-categories.edit', $category->id) }}" 
-                                       class="p-1.5 text-blue-600 hover:bg-blue-50 transition border border-transparent hover:border-blue-100" title="Edit Configuration">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                    </a>
-                                    <form action="{{ route('finance.fee-categories.destroy', $category->id) }}" method="POST" class="inline">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="p-1.5 text-red-500 hover:bg-red-50 transition border border-transparent hover:border-red-100" 
-                                                title="Remove Category" onclick="return confirm('Confirm permanent deletion of this fee category?')">
+                                    @if($category->trashed())
+                                        <form action="{{ route('finance.fee-categories.restore', $category->id) }}" method="POST" class="inline">
+                                            @csrf
+                                            <button type="submit" class="p-1.5 text-blue-600 hover:bg-blue-50 transition border border-transparent hover:border-blue-100 rounded" title="Restore Category" onclick="return confirm('Restore this archived fee category?')">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12l6 6 10-10" />
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    @else
+                                        <a href="{{ route('finance.fee-categories.edit', $category->id) }}"
+                                           class="p-1.5 text-blue-600 hover:bg-blue-50 transition border border-transparent hover:border-blue-100" title="Edit Configuration">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
-                                        </button>
-                                    </form>
+                                        </a>
+                                        <form action="{{ route('finance.fee-categories.destroy', $category->id) }}" method="POST" class="inline">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="p-1.5 text-red-500 hover:bg-red-50 transition border border-transparent hover:border-red-100 rounded"
+                                                    title="Archive Category" onclick="return confirm('This category has historical invoice references. Deleting it may affect future billing structures. Historical invoices will remain preserved. Do you want to archive this category instead?')">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

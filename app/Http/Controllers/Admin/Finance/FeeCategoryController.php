@@ -6,6 +6,7 @@ use App\Http\Requests\Finance\StoreFeeCategoryRequest;
 use App\Http\Requests\Finance\UpdateFeeCategoryRequest;
 use App\Models\FeeCategory;
 use App\Services\Finance\FeeCategoryService;
+use Illuminate\Http\Request;
 
 class FeeCategoryController extends Controller
 {
@@ -17,16 +18,19 @@ class FeeCategoryController extends Controller
         $this->feeCategoryService = $feeCategoryService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $feeCategories = FeeCategory::query()
-
             ->currentSchool()
-            ->currentAcademicYear()
+            ->currentAcademicYear();
 
-            ->latest()
+        if ($request->status === 'archived') {
+            $feeCategories->onlyTrashed();
+        } elseif ($request->status === 'inactive') {
+            $feeCategories->where('status', false);
+        }
 
-            ->paginate(20);
+        $feeCategories = $feeCategories->latest()->paginate(20)->withQueryString();
 
         return view(
             'admin.finance.fee-categories.index',
@@ -93,17 +97,21 @@ class FeeCategoryController extends Controller
 
     public function destroy(FeeCategory $feeCategory)
     {
-        $this->feeCategoryService->delete(
+        $result = $this->feeCategoryService->delete(
             $feeCategory
         );
 
         return redirect()
-
             ->back()
+            ->with('success', $result['message']);
+    }
 
-            ->with(
-                'success',
-                'Fee category deleted successfully.'
-            );
+    public function restore($id)
+    {
+        $this->feeCategoryService->restore($id);
+
+        return redirect()
+            ->back()
+            ->with('success', 'Fee category restored successfully.');
     }
 }

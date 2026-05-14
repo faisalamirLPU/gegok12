@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\Finance\ImmutableAccountingRecord;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StudentFeeLedger extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes,
+        ImmutableAccountingRecord;
 
     protected $table = 'student_fee_ledger';
 

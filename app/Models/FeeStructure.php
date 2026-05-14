@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Finance\Archivable;
 use App\Traits\Finance\BelongsToAcademicYear;
 use App\Traits\Finance\BelongsToSchool;
 use App\Traits\Finance\TracksUserActions;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class FeeStructure extends Model
 {
     use SoftDeletes,
+        Archivable,
         BelongsToSchool,
         BelongsToAcademicYear,
         TracksUserActions;
@@ -34,6 +36,7 @@ class FeeStructure extends Model
 
     protected $casts = [
         'status' => 'boolean',
+        'is_archived' => 'boolean',
     ];
 
     /*

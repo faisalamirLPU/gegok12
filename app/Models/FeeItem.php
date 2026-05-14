@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Traits\Finance\ImmutableAccountingRecord;
 use Illuminate\Database\Eloquent\Model;
 
 class FeeItem extends Model
 {
+    use ImmutableAccountingRecord;
     protected $fillable = [
         'fee_id',
         'fee_category_id',

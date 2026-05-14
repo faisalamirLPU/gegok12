@@ -4,10 +4,12 @@ namespace App\Models;
 use App\Models\StudentAcademic;
 use App\Models\StudentFeeAssignment;
 use App\Models\User;
+use App\Traits\Finance\ImmutableAccountingRecord;
 use Illuminate\Database\Eloquent\Model;
 
 class Fee extends Model
 {
+    use ImmutableAccountingRecord;
     protected $fillable = [
         'school_id',
         'academic_year_id',
@@ -224,7 +226,7 @@ class Fee extends Model
     {
         $total = (float) $this->items()->sum('total');
         $paid = (float) $this->paid_amount;
-        
+
         $balance = max($total - $paid, 0);
         $advance = max($paid - $total, 0);
 

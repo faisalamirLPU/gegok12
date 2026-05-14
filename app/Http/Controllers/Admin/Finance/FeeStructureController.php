@@ -30,23 +30,24 @@ class FeeStructureController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function index()
+    public function index(Request $request)
     {
         $structures = FeeStructure::query()
-
             ->with([
                 'standard',
                 'section',
                 'items.feeCategory'
             ])
-
             ->currentSchool()
+            ->currentAcademicYear();
 
-            ->currentAcademicYear()
+        if ($request->status === 'archived') {
+            $structures->onlyTrashed();
+        } elseif ($request->status === 'inactive') {
+            $structures->where('status', false);
+        }
 
-            ->latest()
-
-            ->paginate(20);
+        $structures = $structures->latest()->paginate(20)->withQueryString();
 
         return view(
             'admin.finance.fee-structures.index',
@@ -350,23 +351,19 @@ class FeeStructureController extends Controller
     {
         $structure = FeeStructure::findOrFail($id);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Delete Items First
-        |--------------------------------------------------------------------------
-        */
-
-        $structure->items()->delete();
-
-        $structure->delete();
+        $result = $this->feeStructureService->delete($structure);
 
         return redirect()
-
             ->route('finance.fee-management.structures')
+            ->with('successmessage', $result['message']);
+    }
 
-            ->with(
-                'successmessage',
-                'Fee structure deleted successfully.'
-            );
+    public function restore($id)
+    {
+        $this->feeStructureService->restore($id);
+
+        return redirect()
+            ->route('finance.fee-management.structures')
+            ->with('successmessage', 'Fee structure restored successfully.');
     }
 }

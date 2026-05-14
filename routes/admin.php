@@ -98,6 +98,11 @@ Route::prefix('finance')
             FeeCategoryController::class
         );
 
+        Route::post(
+            'fee-categories/{id}/restore',
+            [FeeCategoryController::class, 'restore']
+        )->name('fee-categories.restore');
+
         /*
         |--------------------------------------------------------------------------
         | Special Fees
@@ -114,6 +119,11 @@ Route::prefix('finance')
             StudentSpecialFeeController::class
         );
 
+        Route::post(
+            'special-fees/{id}/restore',
+            [StudentSpecialFeeController::class, 'restore']
+        )->name('special-fees.restore');
+
         /*
         |--------------------------------------------------------------------------
         | Fee Structures
@@ -124,6 +134,11 @@ Route::prefix('finance')
             'fee-structures',
             FeeStructureController::class
         );
+
+        Route::post(
+            'fee-structures/{id}/restore',
+            [FeeStructureController::class, 'restore']
+        )->name('fee-structures.restore');
 
         Route::get(
             'student-assignments',
