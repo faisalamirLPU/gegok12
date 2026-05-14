@@ -232,50 +232,88 @@ class FeeManagementController extends Controller
         $schoolId = Auth::user()->school_id;
         $academicYear = SiteHelper::getAcademicYear($schoolId);
 
-        $monthlyCollection = Fee::selectRaw('MONTH(created_at) as month, SUM(paid_amount) as total')
-            ->where('school_id', $schoolId)
-            ->where('academic_year_id', $academicYear->id)
-            ->whereRaw('balance = 0 OR paid_amount >= total_amount')
+        $invoiceQuery = Fee::where('school_id', $schoolId)
+            ->where('academic_year_id', $academicYear->id);
+
+        $totalDemand = (clone $invoiceQuery)->sum('total_amount');
+        $totalCollected = (clone $invoiceQuery)->sum('paid_amount');
+        $totalPending = (clone $invoiceQuery)->sum('balance');
+        $totalAdvance = (clone $invoiceQuery)
+            ->selectRaw('COALESCE(SUM(CASE WHEN paid_amount > total_amount THEN paid_amount - total_amount ELSE 0 END), 0) as total')
+            ->value('total');
+
+        $collectionRate = $totalDemand > 0
+            ? round($totalCollected / $totalDemand * 100, 1)
+            : 0;
+
+        $monthlyCollection = (clone $invoiceQuery)
+            ->selectRaw('MONTH(created_at) as month, SUM(paid_amount) as total')
             ->groupByRaw('MONTH(created_at)')
             ->orderBy('month')
             ->get();
 
+        $paidCount = (clone $invoiceQuery)
+            ->whereRaw('balance <= 0')
+            ->whereColumn('paid_amount', '<=', 'total_amount')
+            ->count();
+
+        $partialCount = (clone $invoiceQuery)
+            ->where('paid_amount', '>', 0)
+            ->where('balance', '>', 0)
+            ->count();
+
+        $pendingCount = (clone $invoiceQuery)
+            ->where('paid_amount', '<=', 0)
+            ->where('balance', '>', 0)
+            ->count();
+
+        $advanceCount = (clone $invoiceQuery)
+            ->whereColumn('paid_amount', '>', 'total_amount')
+            ->count();
+
+        $categoryTotals = StudentSpecialFee::where('school_id', $schoolId)
+            ->where('academic_year_id', $academicYear->id)
+            ->where('status', StudentSpecialFee::STATUS_ACTIVE)
+            ->groupBy('fee_category_id')
+            ->selectRaw('fee_category_id, COALESCE(SUM(amount), 0) as total_special_amount')
+            ->pluck('total_special_amount', 'fee_category_id');
+
         $categoryBreakdown = FeeCategory::with(['structureItems' => function ($query) use ($schoolId, $academicYear) {
-            $query->where('school_id', $schoolId);
-        }])
-        ->where('school_id', $schoolId)
-        ->where('academic_year_id', $academicYear->id)
-        ->get();
-
-        // Build payment status breakdown manually
-        $paidCount = Fee::where('school_id', $schoolId)
+                $query->where('school_id', $schoolId)
+                    ->where('academic_year_id', $academicYear->id);
+            }, 'feeItems'])
+            ->where('school_id', $schoolId)
             ->where('academic_year_id', $academicYear->id)
-            ->whereRaw('balance = 0 OR paid_amount >= total_amount')
-            ->count();
-
-        $paidAmount = Fee::where('school_id', $schoolId)
-            ->where('academic_year_id', $academicYear->id)
-            ->whereRaw('balance = 0 OR paid_amount >= total_amount')
-            ->sum('total_amount');
-
-        $pendingCount = Fee::where('school_id', $schoolId)
-            ->where('academic_year_id', $academicYear->id)
-            ->whereRaw('balance > 0')
-            ->count();
-
-        $pendingAmount = Fee::where('school_id', $schoolId)
-            ->where('academic_year_id', $academicYear->id)
-            ->whereRaw('balance > 0')
-            ->sum('balance');
+            ->where('status', 1)
+            ->get()
+            ->map(function ($category) use ($categoryTotals) {
+                $structureAmount = $category->structureItems->sum('amount');
+                $specialAmount = $categoryTotals->get($category->id, 0);
+                $category->analytics_total_amount = $structureAmount + $specialAmount;
+                $category->analytics_structure_amount = $structureAmount;
+                $category->analytics_special_amount = $specialAmount;
+                return $category;
+            });
 
         $paymentStatusBreakdown = collect([
-            (object) ['payment_status' => 'paid', 'count' => $paidCount, 'total' => $paidAmount ?? 0],
-            (object) ['payment_status' => 'pending', 'count' => $pendingCount, 'total' => $pendingAmount ?? 0],
+            (object) ['payment_status' => 'paid', 'count' => $paidCount, 'total' => $totalCollected],
+            (object) ['payment_status' => 'partial', 'count' => $partialCount, 'total' => (clone $invoiceQuery)->where('paid_amount', '>', 0)->where('balance', '>', 0)->sum('paid_amount')],
+            (object) ['payment_status' => 'pending', 'count' => $pendingCount, 'total' => $totalPending],
+            (object) ['payment_status' => 'advance', 'count' => $advanceCount, 'total' => $totalAdvance],
         ]);
 
         return view(
             'admin.finance.fee-management.analytics',
-            compact('monthlyCollection', 'categoryBreakdown', 'paymentStatusBreakdown')
+            compact(
+                'monthlyCollection',
+                'categoryBreakdown',
+                'paymentStatusBreakdown',
+                'totalDemand',
+                'totalCollected',
+                'totalPending',
+                'totalAdvance',
+                'collectionRate'
+            )
         );
     }
 
