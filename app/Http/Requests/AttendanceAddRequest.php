@@ -29,7 +29,7 @@ class AttendanceAddRequest extends FormRequest
     public function rules()
     {
         Validator::extend('check_date',function($attribute,$value,$parameters,$validator)
-        {   
+        {
             $academic_year  = SiteHelper::getAcademicYear(Auth::user()->school_id);
             $start_date = date('Y-m-d',strtotime($academic_year->start_date));
 
@@ -37,12 +37,12 @@ class AttendanceAddRequest extends FormRequest
             {
                 return true;
             }
-                
+
             return false;
         });
 
         Validator::extend('check_session',function($attribute,$value,$parameters,$validator)
-        {   
+        {
             $academic_year  = SiteHelper::getAcademicYear(Auth::user()->school_id);
             $date = date('Y-m-d',strtotime(request('date')));
             $standardLink_id = (int)request('standardLink_id');
@@ -53,7 +53,7 @@ class AttendanceAddRequest extends FormRequest
                 ['session',request('session')],
                 ['standardLink_id',$standardLink_id]
             ])->exists();
-            
+
             if($attendance)
             {
                 return false;
@@ -62,10 +62,10 @@ class AttendanceAddRequest extends FormRequest
         });
 
         Validator::extend('check_user',function($attribute,$value,$parameters,$validator)
-        { 
+        {
           $count=0;
           for($i=0 ; $i < Request('absentCount') ; $i++)
-          { 
+          {
             if($value==request('user_id'.$i))
             {
               $count++;
@@ -88,14 +88,21 @@ class AttendanceAddRequest extends FormRequest
         ];
 
         for($i=0;$i<Request('absentCount');$i++)
-        {   
+        {
             Validator::extend('check_remarks',function($attribute,$value,$parameters,$validator)
-            { 
-                return preg_match('/^[A-Za-z_~\-!@#\$%\^&*.,:(\)\s]+$/', $value);
+            {
+                Validator::extend('check_remarks',function($attribute,$value,$parameters,$validator)
+                {
+                    if ($value === null || $value === '') {
+                        return true;
+                    }
+
+                    return preg_match('/^[A-Za-z_~\-!@#\$%\^&*.,:(\)\s]+$/', $value);
+                });
             });
 
             $rules['user_id'.$i]    = 'required|check_user';
-            $rules['reason_id'.$i]  = 'required';
+            // $rules['reason_id'.$i]  = 'required';
             $rules['remarks'.$i]    = 'nullable|max:20|check_remarks';
         }
 
@@ -104,7 +111,7 @@ class AttendanceAddRequest extends FormRequest
 
     public function messages()
     {
-        $messages = 
+        $messages =
         [
             //
             'standardLink_id.required'  =>  'Class is required',
